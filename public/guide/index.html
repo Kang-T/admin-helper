@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>Admin Helper 가이드 — Google Workspace 관리자 도우미</title>
+<style>
+body{font-family:"Google Sans Flex","Google Sans","Noto Sans KR",-apple-system,sans-serif;color:#121317;max-width:860px;margin:40px auto;padding:0 16px;line-height:1.6}
+img{max-width:100%;border:1px solid rgba(33,34,38,.12);border-radius:12px}
+table{border-collapse:collapse;width:100%}td,th{border:1px solid #cdd4dc;padding:8px 10px;text-align:left;vertical-align:top}th{background:#f8f9fc}
+h1{font-weight:500}h2{margin-top:40px;font-weight:500}code{font-family:Menlo,monospace;font-size:.95em}
+</style>
+</head>
+<body>
+
+<h1>Admin Helper — Google Workspace 관리자 도우미</h1>
+<p><b>시제품 가이드 · 2026-10-13 · 사단법인 교사크리에이터협회(강경욱)</b></p>
+<p>접속 주소: <a href="https://aiep-admin-helper.vercel.app">https://aiep-admin-helper.vercel.app</a></p>
+<p>Google Admin Console에서 자주 하는 일을 한국어 버튼 하나로 처리하는 웹앱입니다. 교육청 AIEP 담당자와 학교의 위임 관리자가 콘솔 구조를 새로 배우지 않아도 계정 관리와 "왜 안 되는지" 진단을 할 수 있게 하는 것이 목표입니다. 서버와 데이터베이스가 없고, 관리자 본인의 구글 로그인으로 브라우저가 구글 API를 직접 호출합니다.</p>
+
+<h2>1. 왜 만들었나</h2>
+<ul>
+<li><b>어드민 콘솔은 기능이 너무 많습니다.</b> 10년 가까이 쓴 사람도 깊이 들어가면 모르는 메뉴가 있습니다. 교육청 장학사·주무관, 학교 담당 교사는 콘솔을 매일 쓰지 않아서 문제가 생길 때마다 다시 공부해야 합니다.</li>
+<li><b>실제로 하는 일은 몇 가지로 반복됩니다.</b> 비밀번호 초기화, 계정 정지·해제, 전출입에 따른 조직 이동, 신규 교사 계정, "이 선생님이 클래스룸 수업을 못 만들어요". 이 몇 가지를 딸깍 한 번으로 만들면 콘솔 교육의 대부분이 필요 없어집니다.</li>
+<li><b>구글의 Admin console Gemini(2026-08)는 Business 에디션만 대상이고, 안내만 하고 실행은 하지 않습니다.</b> Education 에디션을 쓰는 교육청에는 아직 이런 도구가 없습니다.</li>
+</ul>
+
+<h2>2. 시작하기</h2>
+<ol>
+<li>크롬에서 <a href="https://aiep-admin-helper.vercel.app">https://aiep-admin-helper.vercel.app</a> 를 엽니다.</li>
+<li><b>Google 관리자 계정으로 로그인</b>을 누르고 관리자 계정을 고릅니다. (최고관리자가 아니어도 됩니다. 학교 단위 위임 관리자는 자기 권한 범위 안에서 동작합니다.)</li>
+<li>시제품은 구글 "테스트 모드"라서 "확인되지 않은 앱" 화면이 한 번 나옵니다. <b>고급 → Admin Helper(안전하지 않음)로 이동</b>을 누르면 됩니다. 지금은 등록된 테스트 계정만 로그인할 수 있습니다.</li>
+<li>권한 목록에서 모두 선택 → 계속. 로그인하면 바로 작업 화면입니다.</li>
+</ol>
+<p><img src="https://aiep-admin-helper.vercel.app/guide/01-login.jpg" alt="로그인 화면" width="640"></p>
+
+<h2>3. 화면 구성</h2>
+<p>검색창 하나, 자주 하는 작업 버튼 7개, 설정 바로가기 목록. 이게 전부입니다. 검색창에 "비번", "정지", "클래스룸"처럼 치면 버튼과 바로가기가 걸러집니다.</p>
+<p><img src="https://aiep-admin-helper.vercel.app/guide/02-main.jpg" alt="메인 화면" width="640"></p>
+<p>휴대폰에서도 같은 화면이 한 줄로 배치됩니다.</p>
+<p><img src="https://aiep-admin-helper.vercel.app/guide/07-mobile.jpg" alt="휴대폰 화면" width="260"></p>
+
+<h2>4. 자주 하는 작업 7개</h2>
+<table>
+<tr><th>작업</th><th>무엇을 하나</th><th>콘솔에서 하면</th></tr>
+<tr><td>사용자 찾기·상태 보기</td><td>이름이나 이메일 앞부분으로 찾아 계정 상태·소속 OU·그룹·라이선스·클래스룸 교사 여부를 한 장에 보여줍니다. 카드 아래 버튼으로 바로 다음 작업으로 넘어갑니다.</td><td>사용자 → 검색 → 상세 → 탭 4~5개를 돌아다녀야 합니다</td></tr>
+<tr><td>비밀번호 초기화</td><td>임시 비밀번호를 만들어 한 번 보여주고, 다음 로그인 때 본인이 바꾸게 합니다.</td><td>사용자 → 비밀번호 재설정 → 옵션 선택</td></tr>
+<tr><td>계정 정지·해제</td><td>현재 상태를 보여주고 반대 동작 버튼 하나.</td><td>사용자 → 더보기 → 정지</td></tr>
+<tr><td>조직 단위(OU) 이동</td><td>OU 목록을 들여쓰기 트리로 보여주고 고르면 끝. 전출입 처리.</td><td>사용자 → 조직 단위 변경 → 트리 탐색</td></tr>
+<tr><td>신규 계정 만들기</td><td>성·이름·이메일·OU만 넣으면 임시 비밀번호까지 만들어 줍니다.</td><td>사용자 → 새 사용자 추가 → 항목 10여 개</td></tr>
+<tr><td>클래스룸 교사 승인</td><td><code>classroom_teachers</code> 그룹 가입 여부를 확인하고 한 번에 넣습니다. 그룹이 없는 도메인이면 설정 화면으로 안내합니다.</td><td>그룹 → classroom_teachers → 구성원 추가 (이 그룹의 존재를 아는 사람이 드뭅니다)</td></tr>
+<tr><td>클래스룸 진단</td><td>"왜 수업을 못 만드나"를 5단계로 점검하고, 고칠 수 있는 것은 그 자리에서 버튼으로 고칩니다.</td><td>원인을 아는 사람이 직접 네 곳을 돌아봐야 합니다</td></tr>
+</table>
+<p><img src="https://aiep-admin-helper.vercel.app/guide/04-lookup-card.jpg" alt="사용자 상태 카드" width="640"></p>
+<p>모든 쓰기 작업은 실행 전에 "누구에게 무엇을 하는지" 한 문장으로 확인을 받습니다. 정지·초기화처럼 되돌리기 어려운 일은 빨간 버튼입니다.</p>
+<p><img src="https://aiep-admin-helper.vercel.app/guide/06-confirm.jpg" alt="실행 전 확인" width="640"></p>
+
+<h2>5. 클래스룸 진단: 왜 수업을 못 만드나</h2>
+<p>교사가 "클래스룸에서 수업 만들기가 안 돼요"라고 할 때 원인은 보통 넷 중 하나입니다. 이 화면이 순서대로 점검합니다.</p>
+<ol>
+<li><b>계정 상태</b> — 정지·보관 여부. 정지돼 있으면 그 자리에서 [정지 해제].</li>
+<li><b>클래스룸 프로필</b> — 구글이 보는 수업 만들기 권한(CREATE_COURSE)과 인증된 교사 여부.</li>
+<li><b>classroom_teachers 그룹</b> — 교사 권한이 "인증된 교사만"으로 설정된 도메인에서는 이 그룹에 있어야 합니다. 없으면 [교사로 승인].</li>
+<li><b>Classroom 서비스 상태(정책)</b> — 그 교사가 속한 OU에 Classroom이 켜져 있는지. 켜고 끄는 것은 API가 지원하지 않아 해당 콘솔 화면으로 바로 보냅니다.</li>
+<li><b>라이선스</b> — 참고용. Classroom은 라이선스 없이도 됩니다.</li>
+</ol>
+<p><img src="https://aiep-admin-helper.vercel.app/guide/05-diagnose.jpg" alt="클래스룸 진단 결과" width="640"></p>
+
+<h2>6. 설정 바로가기</h2>
+<p>API로 바꿀 수 없는 설정(앱 켜기·끄기, Gemini 접근, 드라이브 외부 공유, 비밀번호 정책 등)은 "어느 화면에서 무엇을 누르는지" 단계 안내와 함께 콘솔의 정확한 화면으로 바로 보냅니다. 18개 항목이며 실제 콘솔에서 주소를 확인했습니다. 크롬에 계정이 여러 개 로그인돼 있어도 로그인한 관리자 계정으로 바로 열리게 했습니다.</p>
+<p><img src="https://aiep-admin-helper.vercel.app/guide/02-main-settings.jpg" alt="설정 바로가기 목록" width="640"></p>
+
+<h2>7. 보안과 개인정보 설계</h2>
+<ul>
+<li><b>서버가 없습니다.</b> 정적 웹페이지 하나입니다. 교사·학생 정보가 우리 쪽 어디에도 저장되지 않습니다.</li>
+<li><b>로그인은 구글 OAuth.</b> 관리자 본인이 구글에 로그인해 권한을 주고, 받은 토큰은 브라우저 메모리에만 있습니다. 탭을 닫으면 사라집니다. 비밀번호를 우리가 받지 않습니다.</li>
+<li><b>권한 범위는 본인 권한 그대로.</b> 학교 위임 관리자는 자기 OU 밖의 계정을 건드릴 수 없습니다. 구글이 거부하면 화면에 "권한이 없습니다"로 나옵니다.</li>
+<li><b>모든 실행은 구글 관리자 감사 로그에 남습니다.</b> 누가 언제 무엇을 바꿨는지 콘솔에서 그대로 추적됩니다. 별도 로그를 만들지 않았습니다.</li>
+<li><b>오류 문구에 이메일이 섞이면 가립니다.</b> 임시 비밀번호는 한 번만 보여주고 어디에도 기록하지 않습니다.</li>
+<li><b>시도교육청마다 따로 설치합니다.</b> 도메인이 다르므로 각 교육청의 구글 클라우드 프로젝트에 "내부용 앱"으로 등록하면 구글 외부 심사 없이 그 교육청 계정만 쓸 수 있습니다.</li>
+</ul>
+
+<h2>8. 기술 요약</h2>
+<table>
+<tr><th>항목</th><th>내용</th></tr>
+<tr><td>형태</td><td>정적 웹앱(Vite + React + TypeScript). 사이드 패널용 크롬 확장 껍데기 포함.</td></tr>
+<tr><td>사용 API</td><td>Admin SDK Directory(사용자·그룹·OU), Enterprise License Manager(라이선스), Google Classroom(교사 프로필·권한), Cloud Identity Policy(서비스 켜짐·꺼짐 읽기)</td></tr>
+<tr><td>로그인</td><td>Google Identity Services 토큰 클라이언트. 요청 범위: directory.user, group.member, group.readonly, orgunit.readonly, apps.licensing, classroom.rosters.readonly, cloud-identity.policies.readonly</td></tr>
+<tr><td>저장</td><td>없음. 환경변수는 공개값인 OAuth 클라이언트 ID 하나.</td></tr>
+<tr><td>검증</td><td>효림초등학교 워크스페이스(jjhyorim.es.kr) 최고관리자 계정으로 조회·진단 기능 실제 동작 확인(2026-10-13). 쓰기 기능은 코드 완성, 실계정 검증 예정.</td></tr>
+</table>
+
+<h2>9. 지금의 한계</h2>
+<ul>
+<li>앱 켜기·끄기, Gemini 접근 같은 "설정 변경"은 구글 Policy API가 읽기 전용이라 자동 실행이 안 됩니다. 바로가기와 단계 안내로 대신합니다. 구글이 쓰기 API를 열면 바로 버튼이 됩니다.</li>
+<li>테스트 모드라 등록된 계정 100명까지만 로그인됩니다. 교육청 배포 때는 교육청 프로젝트에 내부용으로 등록합니다.</li>
+<li>자연어 입력("3학년 김○○ 비번 풀어줘")은 2차 과제입니다. AI 호출용 서버가 필요해 비용·보안 설계가 한 층 늘어납니다.</li>
+<li>일괄 처리(CSV로 수십 명)는 아직 없습니다. 콘솔 일괄 업로드 화면으로 안내합니다.</li>
+</ul>
+
+<h2>10. 다음 단계</h2>
+<ol>
+<li>전북 AIEP(ai.jbedu.kr) 최고관리자 계정으로 시험 — 교육청 담당자에게 테스트 계정 등록 요청.</li>
+<li>교육청 담당자가 지난 한 달 콘솔에서 실제로 한 일 목록 받기 → 버튼 추가·순서 조정.</li>
+<li>크롬 확장(사이드 패널) 버전을 콘솔 옆에 띄워 비교.</li>
+<li>교육청 정보보안 검토 자료 준비(위 7항 기준).</li>
+<li>구글 파트너 솔루션으로 다른 시도교육청에 복제 배포하는 절차 정리.</li>
+</ol>
+
+<h2>자주 묻는 질문</h2>
+<p><b>AIEP 전용인가요?</b> 아닙니다. 관리자 권한이 있는 어떤 Google Workspace에서도 동작합니다. 학교 자체 워크스페이스, 교육청 AIEP, 협회 도메인 모두 같은 화면입니다.</p>
+<p><b>최고관리자만 쓸 수 있나요?</b> 아닙니다. 학교 단위 위임 관리자도 자기 권한 범위 안에서 그대로 씁니다.</p>
+<p><b>우리 데이터가 어디로 가나요?</b> 관리자 브라우저와 구글 사이에서만 오갑니다. 중간 서버가 없습니다.</p>
+<p><b>운영비가 드나요?</b> 정적 페이지라 사실상 들지 않습니다. 자연어 AI 기능을 붙이면 그때 호출 비용이 생깁니다.</p>
+
+</body>
+</html>

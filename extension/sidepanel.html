@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <!--
+      APP_URL: 웹앱 주소. 배포 후 아래 href 값을 배포 주소로 바꾼다 (끝의 / 유지).
+      확장 페이지(MV3)는 인라인 스크립트를 실행하지 않으므로 const 대신 <base>로 한 곳에 둔다.
+      아래 iframe과 링크는 이 주소를 그대로 쓴다.
+    -->
+    <base href="http://localhost:5173/" />
+    <title>Admin Helper</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+        font-size: 16px;
+      }
+      body {
+        display: flex;
+        flex-direction: column;
+      }
+      .bar {
+        padding: 10px 16px;
+        border-bottom: 1px solid #d9dee6;
+        background: #f5f6f8;
+      }
+      .bar a {
+        color: #1a5fd0;
+        font-weight: 600;
+      }
+      iframe {
+        flex: 1;
+        width: 100%;
+        border: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bar">
+      로그인 창이 열리지 않으면 <a href="./" target="_blank" rel="noopener noreferrer">새 탭에서 열기</a>
+    </div>
+    <iframe src="./" title="Admin Helper"></iframe>
+  </body>
+</html>
