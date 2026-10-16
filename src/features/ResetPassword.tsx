@@ -34,7 +34,7 @@ export function SecretBox({ rows, copyText }: { rows: [string, string][]; copyTe
       <div className="actions">
         <button
           type="button"
-          className="btn primary"
+          className="btn"
           onClick={() =>
             navigator.clipboard.writeText(copyText).then(
               () => setCopy("ok"),
@@ -79,7 +79,7 @@ export default function ResetPassword({ user, setUser }: PanelProps) {
       {user && !password && (
         <>
           <p>임시 비밀번호(12자)를 새로 만들고, 다음 로그인 때 비밀번호를 바꾸도록 설정합니다.</p>
-          <button type="button" className="btn primary" disabled={busy} onClick={() => setConfirming(true)}>
+          <button type="button" className="btn filled" disabled={busy} onClick={() => setConfirming(true)}>
             {busy ? "처리 중…" : "비밀번호 초기화"}
           </button>
         </>

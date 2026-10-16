@@ -31,13 +31,13 @@ h1{font-weight:500}h2{margin-top:40px;font-weight:500}code{font-family:Menlo,mon
 <li>시제품은 구글 "테스트 모드"라서 "확인되지 않은 앱" 화면이 한 번 나옵니다. <b>고급 → Admin Helper(안전하지 않음)로 이동</b>을 누르면 됩니다. 지금은 등록된 테스트 계정만 로그인할 수 있습니다.</li>
 <li>권한 목록에서 모두 선택 → 계속. 로그인하면 바로 작업 화면입니다.</li>
 </ol>
-<p><img src="https://aiep-admin-helper.vercel.app/guide/01-login.jpg" alt="로그인 화면" width="640"></p>
+<p><img src="https://aiep-admin-helper.vercel.app/guide/01-login.jpg" alt="로그인 전 화면: 가운데 카드와 Google 관리자 계정으로 로그인 버튼" width="640"></p>
 
 <h2>3. 화면 구성</h2>
-<p>검색창 하나, 자주 하는 작업 버튼 7개, 설정 바로가기 목록. 이게 전부입니다. 검색창에 "비번", "정지", "클래스룸"처럼 치면 버튼과 바로가기가 걸러집니다.</p>
-<p><img src="https://aiep-admin-helper.vercel.app/guide/02-main.jpg" alt="메인 화면" width="640"></p>
+<p>어드민 콘솔과 같은 구성입니다. 위쪽 검색 바, 왼쪽 메뉴(사용자 · 클래스룸 · 설정 바로가기), 오른쪽 작업 화면. 흐름은 "사람 먼저"입니다. 홈에서 사용자를 찾아 고르면 상태 카드가 열리고, 카드 아래 버튼으로 그 사람에게 할 일을 바로 합니다. 위쪽 검색 바에 "비번", "정지"처럼 치면 작업과 바로가기가 걸러집니다.</p>
+<p><img src="https://aiep-admin-helper.vercel.app/guide/02-main.jpg" alt="홈 화면: 상단 바·왼쪽 메뉴, 사용자 찾기와 사용자 카드, 설정 바로가기" width="640"></p>
 <p>휴대폰에서도 같은 화면이 한 줄로 배치됩니다.</p>
-<p><img src="https://aiep-admin-helper.vercel.app/guide/07-mobile.jpg" alt="휴대폰 화면" width="260"></p>
+<p><img src="https://aiep-admin-helper.vercel.app/guide/07-mobile.jpg" alt="휴대폰 홈 화면: 왼쪽 메뉴는 상단 메뉴 버튼으로 여는 서랍으로 숨김" width="260"></p>
 
 <h2>4. 자주 하는 작업 7개</h2>
 <table>
@@ -50,9 +50,9 @@ h1{font-weight:500}h2{margin-top:40px;font-weight:500}code{font-family:Menlo,mon
 <tr><td>클래스룸 교사 승인</td><td><code>classroom_teachers</code> 그룹 가입 여부를 확인하고 한 번에 넣습니다. 그룹이 없는 도메인이면 설정 화면으로 안내합니다.</td><td>그룹 → classroom_teachers → 구성원 추가 (이 그룹의 존재를 아는 사람이 드뭅니다)</td></tr>
 <tr><td>클래스룸 진단</td><td>"왜 수업을 못 만드나"를 5단계로 점검하고, 고칠 수 있는 것은 그 자리에서 버튼으로 고칩니다.</td><td>원인을 아는 사람이 직접 네 곳을 돌아봐야 합니다</td></tr>
 </table>
-<p><img src="https://aiep-admin-helper.vercel.app/guide/04-lookup-card.jpg" alt="사용자 상태 카드" width="640"></p>
+<p><img src="https://aiep-admin-helper.vercel.app/guide/04-lookup-card.jpg" alt="사용자 카드: 상태 배지, 정보표, 아래 작업 버튼 줄" width="640"></p>
 <p>모든 쓰기 작업은 실행 전에 "누구에게 무엇을 하는지" 한 문장으로 확인을 받습니다. 정지·초기화처럼 되돌리기 어려운 일은 빨간 버튼입니다.</p>
-<p><img src="https://aiep-admin-helper.vercel.app/guide/06-confirm.jpg" alt="실행 전 확인" width="640"></p>
+<p><img src="https://aiep-admin-helper.vercel.app/guide/06-confirm.jpg" alt="실행 전 확인 창: 누구에게 무엇을 하는지 한 문장과 취소·승인 버튼" width="640"></p>
 
 <h2>5. 클래스룸 진단: 왜 수업을 못 만드나</h2>
 <p>교사가 "클래스룸에서 수업 만들기가 안 돼요"라고 할 때 원인은 보통 넷 중 하나입니다. 이 화면이 순서대로 점검합니다.</p>
@@ -63,11 +63,11 @@ h1{font-weight:500}h2{margin-top:40px;font-weight:500}code{font-family:Menlo,mon
 <li><b>Classroom 서비스 상태(정책)</b> — 그 교사가 속한 OU에 Classroom이 켜져 있는지. 켜고 끄는 것은 API가 지원하지 않아 해당 콘솔 화면으로 바로 보냅니다.</li>
 <li><b>라이선스</b> — 참고용. Classroom은 라이선스 없이도 됩니다.</li>
 </ol>
-<p><img src="https://aiep-admin-helper.vercel.app/guide/05-diagnose.jpg" alt="클래스룸 진단 결과" width="640"></p>
+<p><img src="https://aiep-admin-helper.vercel.app/guide/05-diagnose.jpg" alt="클래스룸 진단 카드: 단계별 통과·문제 배지와 그 자리에서 고치는 버튼" width="640"></p>
 
 <h2>6. 설정 바로가기</h2>
 <p>API로 바꿀 수 없는 설정(앱 켜기·끄기, Gemini 접근, 드라이브 외부 공유, 비밀번호 정책 등)은 "어느 화면에서 무엇을 누르는지" 단계 안내와 함께 콘솔의 정확한 화면으로 바로 보냅니다. 18개 항목이며 실제 콘솔에서 주소를 확인했습니다. 크롬에 계정이 여러 개 로그인돼 있어도 로그인한 관리자 계정으로 바로 열리게 했습니다.</p>
-<p><img src="https://aiep-admin-helper.vercel.app/guide/02-main-settings.jpg" alt="설정 바로가기 목록" width="640"></p>
+<p><img src="https://aiep-admin-helper.vercel.app/guide/02-main-settings.jpg" alt="설정 바로가기 앱 묶음: 항목별 콘솔에서 열기와 단계 안내" width="640"></p>
 
 <h2>7. 보안과 개인정보 설계</h2>
 <ul>

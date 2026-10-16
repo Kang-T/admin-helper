@@ -1,5 +1,9 @@
+// 왼쪽 메뉴 「설정 바로가기」 묶음. 어드민 콘솔 왼쪽 메뉴 이름을 따른다.
+export type SettingGroup = "디렉터리" | "앱" | "생성형 AI" | "보안" | "결제·라이선스" | "보고" | "계정" | "기기";
+
 export interface SettingLink {
   id: string;
+  group: SettingGroup;
   title: string;
   description: string;
   url: string;
@@ -10,6 +14,7 @@ export interface SettingLink {
 export const SETTINGS: SettingLink[] = [
   {
     id: "users",
+    group: "디렉터리",
     title: "사용자 목록",
     description: "전체 사용자 보기·추가·CSV 일괄 업로드",
     url: "https://admin.google.com/ac/users",
@@ -18,6 +23,7 @@ export const SETTINGS: SettingLink[] = [
   },
   {
     id: "orgunits",
+    group: "디렉터리",
     title: "조직 단위",
     description: "학교·학년별 OU 만들기·이름 바꾸기",
     url: "https://admin.google.com/ac/orgunits",
@@ -26,6 +32,7 @@ export const SETTINGS: SettingLink[] = [
   },
   {
     id: "groups",
+    group: "디렉터리",
     title: "그룹",
     description: "classroom_teachers 등 그룹 관리",
     url: "https://admin.google.com/ac/groups",
@@ -34,6 +41,7 @@ export const SETTINGS: SettingLink[] = [
   },
   {
     id: "apps-core",
+    group: "앱",
     title: "Google Workspace 앱 켜기·끄기",
     description: "Classroom·Drive·Gmail 등 서비스를 OU별로 켜고 끄기",
     url: "https://admin.google.com/ac/appslist/core",
@@ -42,6 +50,7 @@ export const SETTINGS: SettingLink[] = [
   },
   {
     id: "apps-additional",
+    group: "앱",
     title: "추가 Google 서비스",
     description: "Gemini 앱·YouTube·지도 등 켜고 끄기",
     url: "https://admin.google.com/ac/appslist/additional",
@@ -50,6 +59,7 @@ export const SETTINGS: SettingLink[] = [
   },
   {
     id: "classroom-settings",
+    group: "앱",
     title: "Classroom 설정",
     description: "교사 권한(누가 수업을 만들 수 있나)·학급 가입 범위",
     url: "https://admin.google.com/ac/managedsettings/397451267717",
@@ -62,6 +72,7 @@ export const SETTINGS: SettingLink[] = [
   },
   {
     id: "drive-sharing",
+    group: "앱",
     title: "드라이브 공유 설정",
     description: "외부 공유 허용 범위",
     url: "https://admin.google.com/ac/managedsettings/55656082996",
@@ -70,6 +81,7 @@ export const SETTINGS: SettingLink[] = [
   },
   {
     id: "genai-app",
+    group: "생성형 AI",
     title: "Gemini 앱 설정",
     description: "gemini.google.com 앱을 OU별로 켜고 끄기",
     url: "https://admin.google.com/ac/managedsettings/47208553126",
@@ -78,6 +90,7 @@ export const SETTINGS: SettingLink[] = [
   },
   {
     id: "genai-workspace",
+    group: "생성형 AI",
     title: "Workspace 안의 Gemini",
     description: "문서·Gmail·Meet 안의 Gemini 기능 접근",
     url: "https://admin.google.com/ac/managedsettings/793154499678",
@@ -86,6 +99,7 @@ export const SETTINGS: SettingLink[] = [
   },
   {
     id: "subscriptions",
+    group: "결제·라이선스",
     title: "구독·라이선스",
     description: "어떤 에디션을 몇 개 쓰는지",
     url: "https://admin.google.com/ac/billing/subscriptions",
@@ -94,6 +108,7 @@ export const SETTINGS: SettingLink[] = [
   },
   {
     id: "license-settings",
+    group: "결제·라이선스",
     title: "라이선스 자동 배정",
     description: "OU별로 라이선스를 자동 배정",
     url: "https://admin.google.com/ac/billing/licensesettings",
@@ -102,6 +117,7 @@ export const SETTINGS: SettingLink[] = [
   },
   {
     id: "audit",
+    group: "보고",
     title: "관리자 감사 로그",
     description: "누가 언제 무엇을 바꿨는지",
     url: "https://admin.google.com/ac/sc/investigation?link=CgQIFRgB&ref=reporting",
@@ -110,6 +126,7 @@ export const SETTINGS: SettingLink[] = [
   },
   {
     id: "password-mgmt",
+    group: "보안",
     title: "비밀번호 정책",
     description: "길이·강도·만료",
     url: "https://admin.google.com/ac/security/passwordmanagement",
@@ -118,6 +135,7 @@ export const SETTINGS: SettingLink[] = [
   },
   {
     id: "2sv",
+    group: "보안",
     title: "2단계 인증",
     description: "2단계 인증 강제 여부",
     url: "https://admin.google.com/ac/security/2sv",
@@ -126,6 +144,7 @@ export const SETTINGS: SettingLink[] = [
   },
   {
     id: "roles",
+    group: "계정",
     title: "관리자 역할",
     description: "학교 담당자에게 위임 관리자 권한 주기",
     url: "https://admin.google.com/ac/roles",
@@ -134,6 +153,7 @@ export const SETTINGS: SettingLink[] = [
   },
   {
     id: "devices",
+    group: "기기",
     title: "기기(크롬북)",
     description: "Chrome 기기 관리",
     url: "https://admin.google.com/ac/chrome/devices",
@@ -142,6 +162,7 @@ export const SETTINGS: SettingLink[] = [
   },
   {
     id: "domains",
+    group: "계정",
     title: "도메인",
     description: "도메인 추가·확인",
     url: "https://admin.google.com/ac/domains/manage",

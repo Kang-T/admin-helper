@@ -13,6 +13,14 @@ const STATUS_LABEL: Record<CheckStatus, string> = {
   info: "참고",
 };
 
+// 배지 색: 통과 ok, 문제 err, 확인 불가 warn, 참고 info (DESIGN.md 4항)
+const CHIP: Record<CheckStatus, string> = {
+  pass: "ok",
+  problem: "err",
+  unknown: "warn",
+  info: "info",
+};
+
 export default function DiagnoseClassroom({ domain, user, setUser }: PanelProps) {
   const [checks, setChecks] = useState<Check[] | null>(null);
   const [running, setRunning] = useState(false);
@@ -49,50 +57,66 @@ export default function DiagnoseClassroom({ domain, user, setUser }: PanelProps)
     }
   }
 
+  const problems = checks?.filter((c) => c.status === "problem").length ?? 0;
+
   return (
-    <>
-      <UserPicker user={user} onChange={setUser} />
-      {user && running && <p className="muted">진단하는 중… (정책 확인에 몇 초 걸릴 수 있습니다)</p>}
-      {user && checks && (
-        <>
-          <ol className="checks">
-            {checks.map((c) => (
-              <li key={c.title} className={`check ${c.status}`}>
-                <div className="check-head">
-                  <span className={`badge ${c.status}`}>{STATUS_LABEL[c.status]}</span>
-                  <strong>{c.title}</strong>
-                </div>
-                <p>{c.detail}</p>
-                {(c.fix || c.link) && (
-                  <div className="actions wrap">
-                    {c.fix === "unsuspend" && (
-                      <button type="button" className="btn primary" onClick={() => setFix("unsuspend")}>
-                        정지 해제
-                      </button>
-                    )}
-                    {c.fix === "approve" && (
-                      <button type="button" className="btn primary" onClick={() => setFix("approve")}>
-                        교사로 승인
-                      </button>
-                    )}
-                    {c.link && (
-                      <a className="btn" href={consoleUrl(settingById(c.link).url)} target="_blank" rel="noopener noreferrer">
-                        {settingById(c.link).title} 열기
-                      </a>
+    <div className="card">
+      <div className="hd">
+        <h2>클래스룸 진단</h2>
+        {problems > 0 && <span className="chip err">문제 {problems}</span>}
+      </div>
+      <div className="bd">
+        <UserPicker user={user} onChange={setUser} />
+        {user && running && <p className="muted">진단하는 중… (정책 확인에 몇 초 걸릴 수 있습니다)</p>}
+        {user && checks && (
+          <>
+            <ul className="list">
+              {checks.map((c) => (
+                <li key={c.title}>
+                  <span className={`chip ${CHIP[c.status]}`}>{STATUS_LABEL[c.status]}</span>
+                  <div className="t">
+                    <b>{c.title}</b>
+                    <span>{c.detail}</span>
+                    {(c.fix || c.link) && (
+                      <div className="actions">
+                        {c.fix === "unsuspend" && (
+                          <button type="button" className="btn" onClick={() => setFix("unsuspend")}>
+                            정지 해제
+                          </button>
+                        )}
+                        {c.fix === "approve" && (
+                          <button type="button" className="btn" onClick={() => setFix("approve")}>
+                            교사로 승인
+                          </button>
+                        )}
+                        {c.link && (
+                          <a
+                            className="btn text"
+                            href={consoleUrl(settingById(c.link).url)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            {settingById(c.link).title} 열기
+                            <span className="icon" aria-hidden="true">
+                              open_in_new
+                            </span>
+                          </a>
+                        )}
+                      </div>
                     )}
                   </div>
-                )}
-              </li>
-            ))}
-          </ol>
-          <div className="actions">
-            <button type="button" className="btn" onClick={run} disabled={running}>
-              다시 진단
-            </button>
-          </div>
-        </>
-      )}
-      {error && <p className="msg error">{error}</p>}
+                </li>
+              ))}
+            </ul>
+            <div className="actions">
+              <button type="button" className="btn text" onClick={run} disabled={running}>
+                다시 진단
+              </button>
+            </div>
+          </>
+        )}
+        {error && <p className="msg error">{error}</p>}
+      </div>
       {fix && user && (
         <Confirm
           message={
@@ -105,6 +129,6 @@ export default function DiagnoseClassroom({ domain, user, setUser }: PanelProps)
           onCancel={() => setFix(undefined)}
         />
       )}
-    </>
+    </div>
   );
 }

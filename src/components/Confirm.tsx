@@ -30,11 +30,11 @@ export default function Confirm({
       >
         <h2 id="confirm-title">실행 전에 확인하세요</h2>
         <p>{message}</p>
-        <div className="actions">
-          <button type="button" className="btn" onClick={onCancel} autoFocus>
+        <div className="modal-actions">
+          <button type="button" className="btn text" onClick={onCancel} autoFocus>
             취소
           </button>
-          <button type="button" className={danger ? "btn danger" : "btn primary"} onClick={onConfirm}>
+          <button type="button" className={danger ? "btn danger" : "btn filled"} onClick={onConfirm}>
             {confirmLabel}
           </button>
         </div>

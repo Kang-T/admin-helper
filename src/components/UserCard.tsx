@@ -65,10 +65,8 @@ export default function UserCard({
     ? `정지됨${user.suspensionReason ? ` (사유: ${user.suspensionReason})` : ""}`
     : "정지 안 됨";
 
+  // 이름·이메일·OU는 카드 위 줄에 보이므로 표에서는 뺀다.
   const rows: [string, ReactNode][] = [
-    ["이름", user.name.fullName],
-    ["이메일", email],
-    ["소속 조직(OU)", user.orgUnitPath],
     ["정지 여부", suspended],
     ["보관", yesNo(user.archived)],
     ["마지막 로그인", formatTime(user.lastLoginTime, "로그인 기록 없음")],
@@ -85,7 +83,7 @@ export default function UserCard({
           <ul className="plain">
             {list.map((g) => (
               <li key={g.email}>
-                {g.name} <span className="muted">{g.email}</span>
+                {g.name} <code>{g.email}</code>
               </li>
             ))}
           </ul>
@@ -98,29 +96,65 @@ export default function UserCard({
 
   return (
     <div className="card">
-      <dl className="fields">
-        {rows.map(([label, value]) => (
-          <div key={label}>
-            <dt>{label}</dt>
-            <dd>{value}</dd>
-          </div>
-        ))}
-      </dl>
-      <div className="actions wrap">
+      <div className="who-card">
+        <div className="big" aria-hidden="true">
+          {user.name.fullName.slice(0, 1)}
+        </div>
+        <div className="who-text">
+          <div className="name">{user.name.fullName}</div>
+          <code className="mail">
+            {email} · {user.orgUnitPath}
+          </code>
+        </div>
+        <div className="status">
+          {user.suspended ? <span className="chip err">정지</span> : <span className="chip ok">활성</span>}
+          {teacher?.data === "member" && <span className="chip ok">클래스룸 교사 승인</span>}
+          {teacher?.data === "not-member" && <span className="chip err">클래스룸 교사 미승인</span>}
+          {teacher?.data === "no-group" && <span className="chip warn">classroom_teachers 그룹 없음</span>}
+          {teacher?.error !== undefined && <span className="chip warn">교사 승인 확인 불가</span>}
+          {license?.data && <span className="chip info">{license.data}</span>}
+        </div>
+      </div>
+      <div className="bd">
+        <dl>
+          {rows.map(([label, value]) => (
+            <div key={label}>
+              <dt>{label}</dt>
+              <dd>{value}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+      <div className="card-actions">
         <button type="button" className="btn" onClick={() => onAction("reset-password")}>
+          <span className="icon" aria-hidden="true">
+            key
+          </span>
           비밀번호 초기화
         </button>
         <button type="button" className="btn" onClick={() => onAction("suspend")}>
+          <span className="icon" aria-hidden="true">
+            block
+          </span>
           {user.suspended ? "정지 해제" : "정지"}
         </button>
         <button type="button" className="btn" onClick={() => onAction("move-ou")}>
-          OU 이동
+          <span className="icon" aria-hidden="true">
+            move_down
+          </span>
+          조직 단위 이동
         </button>
         <button type="button" className="btn" onClick={() => onAction("approve-teacher")}>
+          <span className="icon" aria-hidden="true">
+            verified
+          </span>
           클래스룸 교사 승인
         </button>
-        <button type="button" className="btn" onClick={() => onAction("diagnose-classroom")}>
-          클래스룸 진단
+        <button type="button" className="btn text" onClick={() => onAction("diagnose-classroom")}>
+          <span className="icon" aria-hidden="true">
+            troubleshoot
+          </span>
+          왜 수업을 못 만드나
         </button>
       </div>
     </div>

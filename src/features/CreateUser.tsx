@@ -99,7 +99,7 @@ export default function CreateUser({ domain }: PanelProps) {
         </div>
         <p className="muted">임시 비밀번호는 자동으로 만들어집니다.</p>
         <div className="actions">
-          <button type="submit" className="btn primary" disabled={busy}>
+          <button type="submit" className="btn filled" disabled={busy}>
             {busy ? "만드는 중…" : "계정 만들기"}
           </button>
         </div>

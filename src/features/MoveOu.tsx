@@ -85,7 +85,7 @@ export default function MoveOu({ user, setUser }: PanelProps) {
           <div className="actions">
             <button
               type="button"
-              className="btn primary"
+              className="btn filled"
               disabled={busy || target === user.orgUnitPath}
               onClick={() => setConfirming(true)}
             >

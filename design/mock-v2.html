@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin Helper 시안 v2 — 어드민 콘솔 스타일</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@6..144,300..800&family=Noto+Sans+KR:wght@400..700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,0,0" rel="stylesheet">
+<style>
+:root{
+  --surface:#fff; --bg:#fff; --hover:#f1f3f4; --line:#dadce0; --line-soft:#e8eaed;
+  --text:#202124; --text2:#5f6368; --muted:#80868b;
+  --blue:#1a73e8; --blue-text:#1967d2; --blue-bg:#e8f0fe;
+  --ok:#1e8e3e; --ok-bg:#e6f4ea; --err:#d93025; --err-bg:#fce8e6; --warn-text:#b06000; --warn-bg:#fef7e0;
+  --font:"Google Sans Flex","Google Sans","Noto Sans KR",Roboto,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;font-family:var(--font);font-size:14px;color:var(--text);background:var(--bg)}
+.icon{font-family:"Material Symbols Outlined";font-size:20px;line-height:1;vertical-align:middle;font-variation-settings:'opsz' 20}
+
+/* 상단 바 (콘솔: 64px, 흰색, 아래 선) */
+.topbar{position:fixed;inset:0 0 auto 0;height:64px;display:flex;align-items:center;gap:8px;padding:0 16px;background:#fff;border-bottom:1px solid var(--line-soft);z-index:10}
+.topbar .menu{width:48px;height:48px;border:0;background:none;border-radius:50%;display:grid;place-items:center;cursor:pointer}
+.topbar .menu:hover{background:var(--hover)}
+.brand{display:flex;align-items:center;gap:8px;min-width:200px;font-size:22px;letter-spacing:-.2px}
+.brand .logo{width:28px;height:28px;border-radius:50%;background:conic-gradient(#4285f4 0 25%,#34a853 0 50%,#fbbc04 0 75%,#ea4335 0);position:relative}
+.brand .logo::after{content:"";position:absolute;inset:7px;background:#fff;border-radius:50%}
+.brand b{font-weight:500}
+.brand span{color:var(--text2);font-size:14px;margin-left:4px}
+.gsearch{flex:1;max-width:720px;height:46px;margin-left:24px;display:flex;align-items:center;gap:12px;padding:0 16px;background:var(--hover);border-radius:8px;color:var(--text2)}
+.gsearch input{flex:1;border:0;background:none;font:inherit;font-size:16px;color:var(--text);outline:none}
+.topbar .who{margin-left:auto;display:flex;align-items:center;gap:12px;color:var(--text2);font-size:13px}
+.avatar{width:32px;height:32px;border-radius:50%;background:#1a73e8;color:#fff;display:grid;place-items:center;font-weight:600}
+
+/* 왼쪽 메뉴 (콘솔: 256px) */
+.nav{position:fixed;top:64px;bottom:0;left:0;width:256px;overflow:auto;padding:8px 0 16px;border-right:1px solid transparent}
+.nav h4{margin:16px 0 4px 24px;font-size:11px;font-weight:600;letter-spacing:.06em;color:var(--text2);text-transform:uppercase}
+.nav a{display:flex;align-items:center;gap:16px;height:36px;margin:0 8px 2px 0;padding:0 24px;border-radius:0 18px 18px 0;color:var(--text);text-decoration:none;font-size:14px}
+.nav a:hover{background:var(--hover)}
+.nav a.on{background:var(--blue-bg);color:var(--blue-text);font-weight:600}
+.nav a .icon{color:inherit}
+.nav .sub a{padding-left:60px;height:32px;font-size:13px}
+.nav .ext{color:var(--text2);font-size:12px;margin-left:auto}
+
+/* 본문 */
+.main{margin:64px 0 0 256px;padding:24px 40px 48px;max-width:1120px}
+.crumb{font-size:13px;color:var(--text2);margin-bottom:8px}
+h1{font-size:22px;font-weight:400;margin:0 0 20px}
+.card{background:#fff;border:1px solid var(--line);border-radius:8px;margin-bottom:16px}
+.card .hd{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--line-soft)}
+.card .hd h2{margin:0;font-size:16px;font-weight:500}
+.card .bd{padding:16px 20px}
+
+/* 콘솔식 검색 (사용자 찾기) */
+.find{display:flex;gap:8px;align-items:center}
+.find .box{flex:1;height:40px;display:flex;align-items:center;gap:10px;padding:0 12px;border:1px solid var(--line);border-radius:4px}
+.find .box:focus-within{border-color:var(--blue);box-shadow:inset 0 0 0 1px var(--blue)}
+.find input{flex:1;border:0;outline:none;font:inherit;font-size:14px}
+
+/* 버튼 (콘솔식: 4px, 36px) */
+.btn{height:36px;padding:0 16px;border-radius:4px;border:1px solid var(--line);background:#fff;color:var(--blue-text);font:inherit;font-size:14px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.btn:hover{background:#f8fbff}
+.btn.filled{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn.filled:hover{background:#1765cc}
+.btn.text{border-color:transparent}
+.btn.danger{background:var(--err);border-color:var(--err);color:#fff}
+
+/* 사용자 상세: 콘솔의 2열 정보표 */
+.who-card{display:flex;align-items:center;gap:16px;padding:16px 20px;border-bottom:1px solid var(--line-soft)}
+.who-card .big{width:48px;height:48px;border-radius:50%;background:#e8f0fe;color:#1967d2;display:grid;place-items:center;font-size:20px;font-weight:600}
+.who-card .name{font-size:18px;font-weight:500}
+.who-card .mail{color:var(--text2);font-size:13px}
+.status{margin-left:auto;display:flex;gap:8px}
+.chip{display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:12px;font-size:12px;font-weight:600}
+.chip.ok{background:var(--ok-bg);color:var(--ok)} .chip.err{background:var(--err-bg);color:var(--err)} .chip.warn{background:var(--warn-bg);color:var(--warn-text)} .chip.info{background:var(--blue-bg);color:var(--blue-text)}
+dl{display:grid;grid-template-columns:200px 1fr;margin:0}
+dl>div{display:contents}
+dt,dd{padding:10px 0;border-bottom:1px solid var(--line-soft);margin:0}
+dt{color:var(--text2)} dd{color:var(--text)}
+dl>div:last-child dt,dl>div:last-child dd{border-bottom:0}
+code{font-family:"Google Sans Code","SF Mono",Menlo,monospace;font-size:13px;color:var(--text2)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;padding:12px 20px;border-top:1px solid var(--line-soft);background:#fafafa;border-radius:0 0 8px 8px}
+
+/* 두 칸 */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.list{list-style:none;margin:0;padding:0}
+.list li{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line-soft)}
+.list li:last-child{border-bottom:0}
+.list .t{flex:1}
+.list .t b{display:block;font-weight:500}
+.list .t span{display:block;color:var(--text2);font-size:13px}
+.list .icon{color:var(--text2)}
+.note{font-size:12px;color:var(--text2);margin-top:8px}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <button class="menu" aria-label="메뉴"><span class="icon">menu</span></button>
+  <div class="brand"><div class="logo"></div><b>Admin Helper</b><span>효림초등학교</span></div>
+  <div class="gsearch"><span class="icon">search</span><input placeholder="사용자, 작업 또는 설정 검색"></div>
+  <div class="who"><span>chaospia@jjhyorim.es.kr</span><div class="avatar">강</div></div>
+</header>
+
+<nav class="nav">
+  <a href="#" class="on"><span class="icon">home</span>홈</a>
+  <h4>사용자</h4>
+  <a href="#"><span class="icon">person_search</span>사용자 찾기·상태</a>
+  <a href="#"><span class="icon">key</span>비밀번호 초기화</a>
+  <a href="#"><span class="icon">block</span>정지·해제</a>
+  <a href="#"><span class="icon">move_down</span>조직 단위 이동</a>
+  <a href="#"><span class="icon">person_add</span>신규 계정</a>
+  <h4>클래스룸</h4>
+  <a href="#"><span class="icon">verified</span>교사 승인</a>
+  <a href="#"><span class="icon">troubleshoot</span>왜 수업을 못 만드나</a>
+  <h4>설정 바로가기 <span style="font-weight:400;text-transform:none;letter-spacing:0">(콘솔로 이동)</span></h4>
+  <a href="#"><span class="icon">group</span>디렉터리 <span class="ext icon" style="font-size:16px">open_in_new</span></a>
+  <a href="#"><span class="icon">apps</span>앱 <span class="ext icon" style="font-size:16px">open_in_new</span></a>
+  <a href="#"><span class="icon">auto_awesome</span>생성형 AI <span class="ext icon" style="font-size:16px">open_in_new</span></a>
+  <a href="#"><span class="icon">security</span>보안 <span class="ext icon" style="font-size:16px">open_in_new</span></a>
+  <a href="#"><span class="icon">credit_card</span>결제·라이선스 <span class="ext icon" style="font-size:16px">open_in_new</span></a>
+  <a href="#"><span class="icon">bar_chart</span>보고·감사 로그 <span class="ext icon" style="font-size:16px">open_in_new</span></a>
+  <a href="#"><span class="icon">manage_accounts</span>관리자 역할 <span class="ext icon" style="font-size:16px">open_in_new</span></a>
+</nav>
+
+<main class="main">
+  <div class="crumb">홈</div>
+  <h1>무엇을 도와드릴까요?</h1>
+
+  <div class="card">
+    <div class="bd">
+      <div class="find">
+        <div class="box"><span class="icon" style="color:#5f6368">person_search</span><input value="김하늘" placeholder="이름 또는 이메일 앞부분으로 사용자 찾기"></div>
+        <button class="btn filled">찾기</button>
+      </div>
+      <div class="note">검색 결과를 고르면 아래에 상태와 할 수 있는 작업이 나옵니다. 콘솔을 열 필요가 없습니다.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="who-card">
+      <div class="big">김</div>
+      <div><div class="name">김하늘</div><div class="mail">kim.haneul@jjhyorim.es.kr · /교사/5학년</div></div>
+      <div class="status"><span class="chip ok">활성</span><span class="chip err">클래스룸 교사 미승인</span><span class="chip info">Fundamentals</span></div>
+    </div>
+    <div class="bd">
+      <dl>
+        <div><dt>마지막 로그인</dt><dd>2026. 10. 16. 오전 8:57</dd></div>
+        <div><dt>생성일</dt><dd>2026. 3. 2.</dd></div>
+        <div><dt>2단계 인증</dt><dd>사용 안 함</dd></div>
+        <div><dt>소속 그룹</dt><dd>2026 효림초 교원 <code>jjhr_t@jjhyorim.es.kr</code> · 2026 5-1 <code>jjhr2651@jjhyorim.es.kr</code></dd></div>
+        <div><dt>관리자 여부</dt><dd>아님</dd></div>
+      </dl>
+    </div>
+    <div class="actions">
+      <button class="btn"><span class="icon">key</span>비밀번호 초기화</button>
+      <button class="btn"><span class="icon">block</span>정지</button>
+      <button class="btn"><span class="icon">move_down</span>조직 단위 이동</button>
+      <button class="btn filled"><span class="icon">verified</span>클래스룸 교사로 승인</button>
+      <button class="btn text"><span class="icon">troubleshoot</span>왜 수업을 못 만드나</button>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="hd"><h2>클래스룸 진단</h2><span class="chip err">문제 1</span></div>
+      <div class="bd">
+        <ul class="list">
+          <li><span class="chip ok">통과</span><div class="t"><b>계정 상태</b><span>정지·보관되지 않은 정상 계정</span></div></li>
+          <li><span class="chip err">문제</span><div class="t"><b>classroom_teachers 그룹</b><span>가입돼 있지 않음 → 위의 [교사로 승인]</span></div></li>
+          <li><span class="chip ok">통과</span><div class="t"><b>Classroom 서비스</b><span>/교사 OU에 켜짐</span></div></li>
+          <li><span class="chip warn">확인 불가</span><div class="t"><b>라이선스</b><span>이 관리자 역할에 라이선스 읽기 권한 없음</span></div></li>
+        </ul>
+      </div>
+    </div>
+    <div class="card">
+      <div class="hd"><h2>설정 바로가기</h2><button class="btn text">전체 보기</button></div>
+      <div class="bd">
+        <ul class="list">
+          <li><span class="icon">apps</span><div class="t"><b>Google Workspace 앱 켜기·끄기</b><span>Classroom·Drive·Gmail을 OU별로</span></div><span class="icon">open_in_new</span></li>
+          <li><span class="icon">school</span><div class="t"><b>Classroom 설정</b><span>교사 권한·학급 가입 범위</span></div><span class="icon">open_in_new</span></li>
+          <li><span class="icon">auto_awesome</span><div class="t"><b>Gemini 앱</b><span>OU별 켜기·끄기</span></div><span class="icon">open_in_new</span></li>
+          <li><span class="icon">upload_file</span><div class="t"><b>사용자 일괄 업로드(CSV)</b><span>콘솔 사용자 목록 → 일괄 업데이트</span></div><span class="icon">open_in_new</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</main>
+</body>
+</html>

@@ -67,7 +67,7 @@ export default function ApproveTeacher({ domain, user, setUser }: PanelProps) {
           <p>
             아직 승인되지 않았습니다. {group} 그룹에 넣으면 수업을 만들 수 있습니다.
           </p>
-          <button type="button" className="btn primary" disabled={busy} onClick={() => setConfirming(true)}>
+          <button type="button" className="btn filled" disabled={busy} onClick={() => setConfirming(true)}>
             {busy ? "처리 중…" : "교사로 승인"}
           </button>
         </>
@@ -80,6 +80,9 @@ export default function ApproveTeacher({ domain, user, setUser }: PanelProps) {
           </p>
           <a className="btn" href={consoleUrl(classroomSettings.url)} target="_blank" rel="noopener noreferrer">
             Classroom 설정 열기
+            <span className="icon" aria-hidden="true">
+              open_in_new
+            </span>
           </a>
         </div>
       )}

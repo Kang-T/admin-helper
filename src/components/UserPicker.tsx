@@ -17,11 +17,11 @@ export default function UserPicker({
   if (user) {
     return (
       <div className="picked">
-        <div>
+        <div className="picked-text">
           <strong>{user.name.fullName}</strong>
-          <span className="muted"> {user.primaryEmail}</span>
+          <code>{user.primaryEmail}</code>
         </div>
-        <button type="button" className="btn" onClick={() => onChange(null)}>
+        <button type="button" className="btn text" onClick={() => onChange(null)}>
           다른 사용자 선택
         </button>
       </div>
@@ -46,19 +46,24 @@ export default function UserPicker({
 
   return (
     <div className="picker">
-      <form className="row" onSubmit={search}>
+      <form className="find" onSubmit={search}>
         <label className="sr-only" htmlFor="user-search">
           사용자 검색
         </label>
-        <input
-          id="user-search"
-          type="search"
-          placeholder="이메일 또는 이름(앞부분만 써도 됩니다)"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          autoFocus
-        />
-        <button type="submit" className="btn primary" disabled={busy}>
+        <div className="box">
+          <span className="icon" aria-hidden="true">
+            person_search
+          </span>
+          <input
+            id="user-search"
+            type="search"
+            placeholder="이메일 또는 이름(앞부분만 써도 됩니다)"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            autoFocus
+          />
+        </div>
+        <button type="submit" className="btn filled" disabled={busy}>
           {busy ? "찾는 중…" : "찾기"}
         </button>
       </form>
@@ -68,10 +73,17 @@ export default function UserPicker({
         <ul className="results">
           {results.map((u) => (
             <li key={u.primaryEmail}>
-              <button type="button" onClick={() => onChange(u)}>
+              {/* 고른 뒤에는 결과 목록을 닫는다(홈의 찾기 상자는 계속 검색 상태로 남는다) */}
+              <button
+                type="button"
+                onClick={() => {
+                  setResults(null);
+                  onChange(u);
+                }}
+              >
                 <strong>{u.name.fullName}</strong>
-                <span>{u.primaryEmail}</span>
-                <span className="muted">{u.orgUnitPath}</span>
+                <code>{u.primaryEmail}</code>
+                <code>{u.orgUnitPath}</code>
               </button>
             </li>
           ))}
