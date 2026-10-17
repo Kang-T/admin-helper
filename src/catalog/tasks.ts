@@ -6,6 +6,7 @@ export type TaskId =
   | "suspend"
   | "move-ou"
   | "create-user"
+  | "bulk-create"
   | "approve-teacher"
   | "diagnose-classroom";
 
@@ -54,6 +55,12 @@ export const TASKS: Task[] = [
     title: "신규 계정 만들기",
     description: "새 계정을 만들고 임시 비밀번호를 발급합니다",
     keywords: ["신규", "생성", "추가", "새", "발급", "교사", "전입"],
+  },
+  {
+    id: "bulk-create",
+    title: "일괄 생성(CSV)",
+    description: "CSV 파일로 여러 계정을 한 번에 만들고 임시 비밀번호를 발급합니다",
+    keywords: ["일괄", "CSV", "엑셀", "여러 명", "전입", "신입생", "대량"],
   },
   {
     id: "approve-teacher",

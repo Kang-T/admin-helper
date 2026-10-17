@@ -18,6 +18,7 @@ Google Admin Console에서 자주 하는 일을 한국어 버튼 하나로 처�
 | 계정 정지·해제 | |
 | 조직 단위(OU) 이동 | 전출입 처리 |
 | 신규 계정 만들기 | |
+| 일괄 생성(CSV) | 성·이름·이메일·조직단위 CSV로 최대 500명, 임시 비밀번호 결과 파일 |
 | 클래스룸 교사 승인 | `classroom_teachers` 그룹에 추가 |
 | 클래스룸 진단 | "왜 수업을 못 만드나"를 5단계로 점검, 고칠 수 있는 건 그 자리에서 |
 | 설정 바로가기 | API로 바꿀 수 없는 설정은 콘솔의 정확한 화면 + 단계 안내 |
@@ -58,7 +59,7 @@ Admin SDK Directory(사용자·그룹·OU), Enterprise License Manager, Google C
 ## 알려진 한계
 
 - 앱 켜기·끄기, Gemini 접근 같은 "설정 변경"은 Cloud Identity Policy API가 읽기 전용이라 자동 실행이 안 됩니다. 바로가기와 단계 안내로 대신합니다.
-- 일괄 처리(CSV)는 아직 없습니다. 대량 작업은 [GAM](https://github.com/GAM-team/GAM)을 권합니다.
+- 일괄 정지·이동·삭제는 아직 없습니다. 대량·복잡한 작업은 [GAM](https://github.com/GAM-team/GAM)을 권합니다.
 
 ## 크롬 확장(사이드 패널)
 

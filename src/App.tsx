@@ -17,6 +17,7 @@ import ResetPassword from "./features/ResetPassword";
 import Suspend from "./features/Suspend";
 import MoveOu from "./features/MoveOu";
 import CreateUser from "./features/CreateUser";
+import BulkCreate from "./features/BulkCreate";
 import ApproveTeacher from "./features/ApproveTeacher";
 import DiagnoseClassroom from "./features/DiagnoseClassroom";
 
@@ -26,6 +27,7 @@ const PANELS: Record<TaskId, ComponentType<PanelProps>> = {
   suspend: Suspend,
   "move-ou": MoveOu,
   "create-user": CreateUser,
+  "bulk-create": BulkCreate,
   "approve-teacher": ApproveTeacher,
   "diagnose-classroom": DiagnoseClassroom,
 };
@@ -37,6 +39,7 @@ const TASK_NAV: { id: TaskId; label: string; icon: string; section: "사용자" 
   { id: "suspend", label: "정지·해제", icon: "block", section: "사용자" },
   { id: "move-ou", label: "조직 단위 이동", icon: "move_down", section: "사용자" },
   { id: "create-user", label: "신규 계정", icon: "person_add", section: "사용자" },
+  { id: "bulk-create", label: "일괄 생성(CSV)", icon: "upload_file", section: "사용자" },
   { id: "approve-teacher", label: "교사 승인", icon: "verified", section: "클래스룸" },
   { id: "diagnose-classroom", label: "왜 수업을 못 만드나", icon: "troubleshoot", section: "클래스룸" },
 ];
@@ -321,8 +324,8 @@ function Main({ account, onLogout }: { account: Account; onLogout: () => void })
         openTask={openTask}
       />
     );
-    // 찾기·상태는 패널 안에 사용자 카드가 있고, 신규 계정은 선택한 사용자와 관계없다.
-    const showUser = user && view.id !== "lookup" && view.id !== "create-user";
+    // 찾기·상태는 패널 안에 사용자 카드가 있고, 신규 계정·일괄 생성은 선택한 사용자와 관계없다.
+    const showUser = user && view.id !== "lookup" && view.id !== "create-user" && view.id !== "bulk-create";
     body = (
       <>
         {showUser && <UserCard user={user} domain={account.domain} onAction={openTask} />}

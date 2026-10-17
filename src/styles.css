@@ -797,6 +797,69 @@ details ol {
   color: var(--text2);
 }
 
+/* ---- 표 (일괄 생성 검토·결과). 가로 스크롤은 표 안에서만 ---- */
+.table-wrap {
+  margin-top: 12px;
+  overflow-x: auto;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.table th,
+.table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--line-soft);
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.table th {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text2);
+}
+.table th:first-child,
+.table td:first-child {
+  padding-left: 0;
+}
+.table td.wrap {
+  min-width: 200px;
+  white-space: normal;
+}
+.table .pw {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text);
+}
+.table .reason {
+  display: block;
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--text2);
+}
+
+input[type="file"] {
+  height: auto;
+  padding: 8px 12px;
+}
+
+/* 진행 막대 */
+.progress {
+  height: 4px;
+  margin: 12px 0;
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--line-soft);
+}
+.progress > div {
+  height: 100%;
+  background: var(--blue);
+  transition: width 0.2s;
+}
+
 /* ---- 확인 모달 ---- */
 .overlay {
   position: fixed;
