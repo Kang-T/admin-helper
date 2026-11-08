@@ -1,6 +1,6 @@
 # Admin Helper — Google Workspace 관리자 도우미
 
-애칭 「구아」(Google Admin Helper). 운영 주소: https://gooah.kangt.kr
+운영 주소: https://adhelp.kangt.kr
 
 Google Admin Console에서 자주 하는 일을 한국어 버튼 하나로 처리하는 웹앱입니다.
 교육청·학교의 관리자(최고관리자가 아니어도 됩니다. 위임 관리자는 자기 권한 범위 안에서 동작합니다)가
