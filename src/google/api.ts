@@ -256,9 +256,9 @@ export interface Policy {
   setting: { type: string; value?: Record<string, unknown> };
 }
 
-export async function listPolicies(): Promise<Policy[]> {
-  // 서비스 켜짐·꺼짐 정책만 받는다. 전체를 받으면 수백 건이라 페이지를 여러 번 넘겨야 한다.
-  const filter = enc("setting.type.matches('.*service_status')");
+export async function listPolicies(filterExpr?: string): Promise<Policy[]> {
+  // 필터(CEL)를 주지 않으면 서비스 켜짐·꺼짐 정책만 받는다. 전체를 받으면 수백 건이라 페이지를 여러 번 넘겨야 한다.
+  const filter = enc(filterExpr ?? "setting.type.matches('.*service_status')");
   const all: Policy[] = [];
   let pageToken = "";
   do {

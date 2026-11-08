@@ -610,6 +610,10 @@ label {
   background: var(--info-bg);
   color: var(--info);
 }
+.chip.muted {
+  background: var(--hover);
+  color: var(--text2);
+}
 dl {
   display: grid;
   grid-template-columns: 200px minmax(0, 1fr);

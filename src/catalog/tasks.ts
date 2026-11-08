@@ -11,7 +11,8 @@ export type TaskId =
   | "bulk-csv"
   | "promote"
   | "approve-teacher"
-  | "diagnose-classroom";
+  | "diagnose-classroom"
+  | "checklist";
 
 export interface Task {
   id: TaskId;
@@ -96,5 +97,11 @@ export const TASKS: Task[] = [
     title: "클래스룸 진단: 왜 수업을 못 만드나",
     description: "수업을 만들지 못하는 원인을 차례로 점검합니다",
     keywords: ["진단", "클래스룸", "수업", "못", "안됨", "오류", "왜"],
+  },
+  {
+    id: "checklist",
+    title: "전환 점검표",
+    description: "도메인 전환과 학년 초 준비가 됐는지 설정을 한 화면에서 점검합니다",
+    keywords: ["점검", "전환", "체크리스트", "외부 공유", "Takeout", "콘텐츠 전송", "2단계", "준비"],
   },
 ];

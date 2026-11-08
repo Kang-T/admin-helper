@@ -169,6 +169,20 @@ export const SETTINGS: SettingLink[] = [
     keywords: ["도메인"],
     steps: ["도메인 추가"],
   },
+  {
+    id: "takeout",
+    group: "계정",
+    title: "Google Takeout·콘텐츠 전송",
+    description: "사용자가 다른 계정으로 자료를 복사(콘텐츠 전송)할 수 있는지",
+    // 주소는 확인되지 않은 추정이다(실제 콘솔에서 열어 보고 고칠 것).
+    url: "https://admin.google.com/ac/apps/takeout",
+    keywords: ["Takeout", "테이크아웃", "콘텐츠 전송", "내보내기", "전환"],
+    steps: [
+      "데이터 → 데이터 가져오기 및 내보내기 → Google Takeout",
+      "'콘텐츠 전송 허용' 체크",
+      "드라이브·Gmail 서비스가 켜져 있는지 확인",
+    ],
+  },
 ];
 
 export function settingById(id: string): SettingLink {

@@ -23,6 +23,7 @@ import BulkAction from "./features/BulkAction";
 import Promote from "./features/Promote";
 import ApproveTeacher from "./features/ApproveTeacher";
 import DiagnoseClassroom from "./features/DiagnoseClassroom";
+import Checklist from "./features/Checklist";
 
 const PANELS: Record<TaskId, ComponentType<PanelProps>> = {
   lookup: Lookup,
@@ -36,10 +37,13 @@ const PANELS: Record<TaskId, ComponentType<PanelProps>> = {
   promote: Promote,
   "approve-teacher": ApproveTeacher,
   "diagnose-classroom": DiagnoseClassroom,
+  checklist: Checklist,
 };
 
+type Section = "사용자" | "클래스룸" | "전환";
+
 // 왼쪽 메뉴의 작업 항목 (DESIGN.md 1항). label은 메뉴·제목(h1)·빵부스러기에 같이 쓴다.
-const TASK_NAV: { id: TaskId; label: string; icon: string; section: "사용자" | "클래스룸" }[] = [
+const TASK_NAV: { id: TaskId; label: string; icon: string; section: Section }[] = [
   { id: "lookup", label: "사용자 찾기·상태", icon: "person_search", section: "사용자" },
   { id: "reset-password", label: "비밀번호 초기화", icon: "key", section: "사용자" },
   { id: "suspend", label: "정지·해제", icon: "block", section: "사용자" },
@@ -51,6 +55,7 @@ const TASK_NAV: { id: TaskId; label: string; icon: string; section: "사용자" 
   { id: "promote", label: "학년 진급", icon: "school", section: "사용자" },
   { id: "approve-teacher", label: "교사 승인", icon: "verified", section: "클래스룸" },
   { id: "diagnose-classroom", label: "왜 수업을 못 만드나", icon: "troubleshoot", section: "클래스룸" },
+  { id: "checklist", label: "전환 점검표", icon: "fact_check", section: "전환" },
 ];
 
 // 왼쪽 메뉴 「설정 바로가기」 묶음과 아이콘
@@ -270,7 +275,7 @@ function Main({ account, onLogout }: { account: Account; onLogout: () => void })
   );
   // 검색 결과를 보는 동안에는 메뉴 선택 표시를 끈다(본문과 맞춘다).
   const at = searching ? null : view;
-  const taskNav = (section: "사용자" | "클래스룸") =>
+  const taskNav = (section: Section) =>
     TASK_NAV.filter((n) => n.section === section).map((n) =>
       navItem(n.id, at?.kind === "task" && at.id === n.id, n.icon, n.label, () => openTask(n.id)),
     );
@@ -348,7 +353,8 @@ function Main({ account, onLogout }: { account: Account; onLogout: () => void })
       view.id !== "bulk-create" &&
       view.id !== "user-list" &&
       view.id !== "bulk-csv" &&
-      view.id !== "promote";
+      view.id !== "promote" &&
+      view.id !== "checklist";
     body = (
       <>
         {showUser && <UserCard user={user} domain={account.domain} onAction={openTask} />}
@@ -462,6 +468,8 @@ function Main({ account, onLogout }: { account: Account; onLogout: () => void })
         {taskNav("사용자")}
         <h4>클래스룸</h4>
         {taskNav("클래스룸")}
+        <h4>전환</h4>
+        {taskNav("전환")}
         <h4>
           설정 바로가기 <span>(콘솔로 이동)</span>
         </h4>
