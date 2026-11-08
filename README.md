@@ -1,6 +1,7 @@
 # Admin Helper — Google Workspace 관리자 도우미
 
-운영 주소: https://adhelp.kangt.kr
+운영 주소: **https://adhelp.kangt.kr** (공식 주소는 이것 하나입니다. 다른 주소에서 구글 로그인을 요구하면 로그인하지 마세요)
+· [가이드](https://adhelp.kangt.kr/guide/) · [개인정보처리방침](https://adhelp.kangt.kr/privacy/) · [보안 문제 신고](SECURITY.md)
 
 Google Admin Console에서 자주 하는 일을 한국어 버튼 하나로 처리하는 웹앱입니다.
 교육청·학교의 관리자(최고관리자가 아니어도 됩니다. 위임 관리자는 자기 권한 범위 안에서 동작합니다)가
@@ -80,6 +81,13 @@ Admin SDK Directory(사용자·그룹·OU), Enterprise License Manager, Google C
 ## 디자인
 
 `DESIGN.md` — 색·글꼴·간격 기준.
+
+## 오픈소스 안내
+
+- 코드는 MIT 라이선스로 누구나 쓰고 고치고 자기 교육청·학교에 올릴 수 있습니다. 그렇게 올린 사이트의 운영 책임은 올린 쪽에 있습니다.
+- 개인이 짬짬이 만드는 프로젝트입니다. 이슈·PR은 환영하지만 답변과 반영을 약속하지는 못합니다.
+- 보안 문제는 이슈가 아니라 `SECURITY.md`의 메일로 보내 주세요.
+- 다른 교육청에 올릴 때는 `SETUP_OAUTH.md`대로 그 교육청의 구글 클라우드 프로젝트에 OAuth 클라이언트를 따로 만들고, 운영 주소를 바꿔 쓰세요. 이 저장소의 클라이언트 ID는 adhelp.kangt.kr 전용입니다.
 
 ## 라이선스
 

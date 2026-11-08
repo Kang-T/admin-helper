@@ -155,6 +155,10 @@ export default function App() {
             <p className="msg warn">설정이 필요합니다: SETUP_OAUTH.md를 보세요</p>
           )}
           {error && <p className="msg error">{error}</p>}
+          <p className="login-links">
+            <a href="/guide/">가이드</a> · <a href="/privacy/">개인정보처리방침</a> ·{" "}
+            <a href="https://github.com/Kang-T/admin-helper">소스 코드</a>
+          </p>
         </div>
       </main>
     );
