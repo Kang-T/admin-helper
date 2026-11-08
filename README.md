@@ -25,6 +25,7 @@ Google Admin Console에서 자주 하는 일을 한국어 버튼 하나로 처�
 | 사용자 목록·일괄 작업 | 조직·상태·미접속으로 걸러 여러 명을 한 번에 정지·해제·OU 이동, 목록·결과 CSV |
 | 일괄 작업(CSV) | 이메일 목록 CSV로 최대 500명을 정지·해제·OU 이동·비밀번호 초기화, 결과 CSV(초기화는 임시 비밀번호 포함) |
 | 학년 진급 | 학년도 OU의 반 OU 학생을 새 학년도 반(5-1 → 6-1)으로 한 번에 이동, 마지막 학년은 졸업생 OU로 옮기고 정지, 반이 바뀌는 학생은 CSV로 개별 지정, 없는 OU는 자동 생성, 결과 CSV |
+| 계정 삭제 | 정지된 계정만. 드라이브 사용량으로 나눠 50 MB 이하는 바로, 5 GB 이하는 드라이브 소유권 이전이 끝난 뒤 삭제, 그보다 크면 콘솔에서 직접. `삭제` 입력 확인, 결과 CSV(20일 안에 콘솔에서 복구 가능) |
 | 클래스룸 교사 승인 | `classroom_teachers` 그룹에 추가 |
 | 클래스룸 진단 | "왜 수업을 못 만드나"를 5단계로 점검, 고칠 수 있는 건 그 자리에서 |
 | 전환 점검표 | 도메인 전환·학년 초 준비 설정 8가지(외부 공유·클래스룸 가입 범위·교사 권한·2단계 인증·Gmail·Takeout·미접속 계정·다음 학년도 OU)를 한 화면에서 점검, 결과 글 복사. 읽기 전용 |
@@ -63,12 +64,13 @@ npm test                     # 자동 테스트(CSV 읽기·검증, 진단 판�
 
 Admin SDK Directory(사용자·그룹·OU), Enterprise License Manager, Google Classroom(교사 프로필), Cloud Identity Policy(서비스 상태 읽기).
 요청 범위: `admin.directory.user`, `admin.directory.group.member`, `admin.directory.group.readonly`, `admin.directory.orgunit`,
-`apps.licensing`, `classroom.rosters.readonly`, `cloud-identity.policies.readonly`, `userinfo.email`.
+`apps.licensing`, `classroom.rosters.readonly`, `cloud-identity.policies.readonly`, `admin.reports.usage.readonly`,
+`admin.datatransfer`, `userinfo.email`.
 
 ## 알려진 한계
 
 - 앱 켜기·끄기, Gemini 접근 같은 "설정 변경"은 Cloud Identity Policy API가 읽기 전용이라 자동 실행이 안 됩니다. 바로가기와 단계 안내로 대신합니다.
-- 일괄 삭제는 아직 없습니다(정지까지만). 대량·복잡한 작업은 [GAM](https://github.com/GAM-team/GAM)을 권합니다.
+- 삭제는 정지된 계정만, 드라이브 소유권 이전 뒤에 됩니다. 대량·복잡한 작업은 [GAM](https://github.com/GAM-team/GAM)을 권합니다.
 
 ## 크롬 확장(사이드 패널)
 

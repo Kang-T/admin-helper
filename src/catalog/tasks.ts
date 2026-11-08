@@ -10,6 +10,7 @@ export type TaskId =
   | "user-list"
   | "bulk-csv"
   | "promote"
+  | "delete-users"
   | "approve-teacher"
   | "diagnose-classroom"
   | "checklist";
@@ -85,6 +86,12 @@ export const TASKS: Task[] = [
     title: "학년 진급",
     description: "학년도 OU의 학생들을 새 학년도 반으로 한 번에 옮기고 졸업생은 정지합니다",
     keywords: ["진급", "학년", "학년도", "졸업", "새 학기", "반 편성", "OU"],
+  },
+  {
+    id: "delete-users",
+    title: "계정 삭제",
+    description: "정지된 계정을 드라이브 사용량을 확인하고 소유권을 넘긴 뒤 삭제합니다",
+    keywords: ["삭제", "지우기", "졸업생", "전출", "정리", "드라이브 이전", "소유권"],
   },
   {
     id: "approve-teacher",

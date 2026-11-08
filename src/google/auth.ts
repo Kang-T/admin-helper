@@ -12,6 +12,8 @@ const SCOPE_LIST = [
   "https://www.googleapis.com/auth/apps.licensing",
   "https://www.googleapis.com/auth/classroom.rosters.readonly",
   "https://www.googleapis.com/auth/cloud-identity.policies.readonly",
+  "https://www.googleapis.com/auth/admin.reports.usage.readonly",
+  "https://www.googleapis.com/auth/admin.datatransfer",
 ];
 
 export const CLIENT_ID: string = import.meta.env.VITE_GOOGLE_CLIENT_ID ?? "";

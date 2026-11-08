@@ -7,6 +7,7 @@ import { runBulk, withRetry } from "../bulk";
 import { downloadCsv, stamp, toCsv } from "../csv";
 import { adminLabel, filterUsers, lastLogin, usersToCsv, ymd, type Filters } from "../userlist";
 import { OuSelect, useOrgUnits } from "./MoveOu";
+import { pendingDelete } from "../selection";
 
 type Kind = "suspend" | "unsuspend" | "move";
 type Sort = "name" | "login" | "email";
@@ -349,6 +350,17 @@ export default function UserList({ setUser, openTask, setLocked, me }: PanelProp
                       </label>
                       <OuSelect id="ul-move" units={units} value={moveTarget} onChange={setMoveTarget} />
                     </div>
+                    <button
+                      type="button"
+                      className="btn text"
+                      disabled={!chosen.some((u) => u.suspended)}
+                      onClick={() => {
+                        pendingDelete.emails = chosen.filter((u) => u.suspended).map((u) => u.primaryEmail);
+                        openTask("delete-users");
+                      }}
+                    >
+                      정지 계정 삭제 →
+                    </button>
                   </>
                 )}
               </div>

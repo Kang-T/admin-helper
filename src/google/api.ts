@@ -4,6 +4,8 @@ const DIRECTORY = "https://admin.googleapis.com/admin/directory/v1";
 const LICENSING = "https://licensing.googleapis.com/apps/licensing/v1";
 const CLASSROOM = "https://classroom.googleapis.com/v1";
 const CLOUD_IDENTITY = "https://cloudidentity.googleapis.com/v1";
+const REPORTS = "https://admin.googleapis.com/admin/reports/v1";
+const DATA_TRANSFER = "https://admin.googleapis.com/admin/datatransfer/v1";
 
 const enc = encodeURIComponent;
 
@@ -50,7 +52,9 @@ async function request<T>(url: string, method = "GET", body?: unknown): Promise<
     const data = await res.json().catch(() => null);
     throw new ApiError(res.status, data?.error?.message ?? res.statusText);
   }
-  return res.status === 204 ? (undefined as T) : res.json();
+  // 삭제처럼 본문 없이 끝나는 요청은 204가 아니라 200 + 빈 본문으로 올 때도 있다.
+  const text = res.status === 204 ? "" : await res.text();
+  return (text ? JSON.parse(text) : undefined) as T;
 }
 
 // ---- 로그인한 관리자 ----
@@ -62,6 +66,7 @@ export function getUserInfo(): Promise<{ email: string }> {
 // ---- 사용자 ----
 
 export interface User {
+  id?: string; // Directory 사용자 id(드라이브 소유권 이전에 쓴다)
   primaryEmail: string;
   name: { fullName: string; familyName: string; givenName: string };
   orgUnitPath: string;
@@ -100,7 +105,7 @@ export async function listUsers(opts: {
   pageToken?: string;
 }): Promise<{ users: User[]; nextPageToken?: string }> {
   const fields =
-    "nextPageToken,users(primaryEmail,name,orgUnitPath,suspended,suspensionReason,archived,lastLoginTime,creationTime,isAdmin,isDelegatedAdmin,isEnrolledIn2Sv,changePasswordAtNextLogin)";
+    "nextPageToken,users(id,primaryEmail,name,orgUnitPath,suspended,suspensionReason,archived,lastLoginTime,creationTime,isAdmin,isDelegatedAdmin,isEnrolledIn2Sv,changePasswordAtNextLogin)";
   let url = `${DIRECTORY}/users?customer=my_customer&maxResults=500&orderBy=email&viewType=admin_view&fields=${enc(fields)}`;
   if (opts.orgUnitPath && opts.orgUnitPath !== "/") url += `&query=${enc(`orgUnitPath='${opts.orgUnitPath}'`)}`;
   if (opts.pageToken) url += `&pageToken=${enc(opts.pageToken)}`;
@@ -127,6 +132,73 @@ export function createUser(fields: {
   orgUnitPath: string;
 }): Promise<User> {
   return request(`${DIRECTORY}/users`, "POST", fields);
+}
+
+// 계정 삭제. 구글 관리 콘솔에서 20일 안에 복구할 수 있다.
+export async function deleteUser(email: string): Promise<void> {
+  await request(`${DIRECTORY}/users/${enc(email)}`, "DELETE");
+}
+
+// ---- 사용량 보고서(Reports API) ----
+
+// 그날의 드라이브 사용량(MB). 보고서는 2~3일 늦게 만들어지므로 호출부가 날짜를 바꿔 가며 부른다.
+// 그날 보고서가 없으면 둘 다 null.
+export async function getDriveUsageMb(
+  email: string,
+  date: string,
+): Promise<{ usedMb: number | null; totalMb: number | null }> {
+  const params = "accounts:drive_used_quota_in_mb,accounts:used_quota_in_mb,accounts:total_quota_in_mb";
+  const data = await request<{ usageReports?: { parameters?: { name: string; intValue?: string }[] }[] }>(
+    `${REPORTS}/usage/users/${enc(email)}/dates/${date}?parameters=${enc(params)}`,
+  );
+  const list = data.usageReports?.[0]?.parameters ?? [];
+  const num = (name: string) => {
+    const v = list.find((p) => p.name === name)?.intValue;
+    return v === undefined || v === "" || Number.isNaN(Number(v)) ? null : Number(v);
+  };
+  return {
+    usedMb: num("accounts:drive_used_quota_in_mb") ?? num("accounts:used_quota_in_mb"),
+    totalMb: num("accounts:total_quota_in_mb"),
+  };
+}
+
+// ---- 데이터 이전(Data Transfer API) ----
+
+export interface Transfer {
+  id: string;
+  overallTransferStatusCode?: string;
+  newOwnerUserId?: string;
+  requestTime?: string;
+  applicationDataTransfers?: { applicationId: string }[];
+}
+
+export async function listTransferApps(): Promise<{ id: string; name: string }[]> {
+  const data = await request<{ applications?: { id: string; name: string }[] }>(
+    `${DATA_TRANSFER}/applications?customerId=my_customer`,
+  );
+  return (data.applications ?? []).map((a) => ({ id: String(a.id), name: a.name }));
+}
+
+// 드라이브 파일(비공개·공유 모두)의 소유권을 넘긴다. 구글이 뒤에서 처리하며 몇 분 걸릴 수 있다.
+export function createDriveTransfer(oldOwnerId: string, newOwnerId: string, appId: string): Promise<Transfer> {
+  return request(`${DATA_TRANSFER}/transfers`, "POST", {
+    oldOwnerUserId: oldOwnerId,
+    newOwnerUserId: newOwnerId,
+    applicationDataTransfers: [
+      { applicationId: appId, applicationTransferParams: [{ key: "PRIVACY_LEVEL", value: ["PRIVATE", "SHARED"] }] },
+    ],
+  });
+}
+
+export function getTransfer(id: string): Promise<Transfer> {
+  return request(`${DATA_TRANSFER}/transfers/${enc(id)}`);
+}
+
+export async function listTransfers(oldOwnerId: string): Promise<Transfer[]> {
+  const data = await request<{ dataTransfers?: Transfer[]; transfers?: Transfer[] }>(
+    `${DATA_TRANSFER}/transfers?customerId=my_customer&oldOwnerUserId=${enc(oldOwnerId)}`,
+  );
+  return data.dataTransfers ?? data.transfers ?? [];
 }
 
 // ---- 그룹 ----
