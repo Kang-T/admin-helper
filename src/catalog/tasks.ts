@@ -8,6 +8,7 @@ export type TaskId =
   | "create-user"
   | "bulk-create"
   | "user-list"
+  | "bulk-csv"
   | "approve-teacher"
   | "diagnose-classroom";
 
@@ -70,6 +71,12 @@ export const TASKS: Task[] = [
     title: "사용자 목록·일괄 작업",
     description: "조직·상태·미접속으로 걸러 여러 명을 한 번에 정지·해제·이동합니다",
     keywords: ["목록", "일괄", "미접속", "안 쓰는", "졸업", "전출", "정지", "이동", "CSV"],
+  },
+  {
+    id: "bulk-csv",
+    title: "일괄 작업(CSV)",
+    description: "이메일 목록 CSV로 여러 명을 정지·해제·이동하거나 비밀번호를 초기화합니다",
+    keywords: ["일괄", "CSV", "엑셀", "정지", "해제", "이동", "비밀번호", "초기화", "전출", "학년 초"],
   },
   {
     id: "approve-teacher",

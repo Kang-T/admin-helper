@@ -1,5 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { MAX_ROWS, decodeCsv, parseCsv, toCsv, validateRows } from "./csv";
+import {
+  ACTION_LABEL,
+  MAX_ROWS,
+  actionTemplate,
+  decodeCsv,
+  parseCsv,
+  toCsv,
+  validateActionRows,
+  validateRows,
+  type BulkAction,
+} from "./csv";
 
 // 시험용 값은 모두 예시다(실제 학교·사람이 아님).
 const DOMAIN = "school.example";
@@ -271,5 +281,134 @@ describe("validateRows: 줄별 검사", () => {
 
   it("칸이 모자란 줄은 없는 칸을 빈 값으로 본다", () => {
     expect(rowsOf([["홍", "길동", "hong"]])[0]).toMatchObject({ orgUnitPath: "/", password: "", problem: "" });
+  });
+});
+
+const ME = "admin@school.example";
+
+// 일괄 작업 표를 검증하고, 결과가 줄 목록이라고 단언한다.
+function actionRowsOf(action: BulkAction, table: string[][]) {
+  const r = validateActionRows(table, DOMAIN, OUS, action, ME);
+  if ("error" in r) throw new Error(`예상하지 못한 오류: ${r.error}`);
+  return r.rows;
+}
+
+describe("actionTemplate", () => {
+  it("이동은 이메일·조직단위, 나머지는 이메일만", () => {
+    expect(actionTemplate("move")).toBe("이메일,조직단위\nhong.gildong,/2026학년도/4-1\n");
+    for (const a of ["suspend", "unsuspend", "reset"] as const) expect(actionTemplate(a)).toBe("이메일\nhong.gildong\n");
+  });
+
+  it("양식을 그대로 올리면 정상으로 읽힌다", () => {
+    for (const a of Object.keys(ACTION_LABEL) as BulkAction[]) {
+      const rows = actionRowsOf(a, parseCsv(actionTemplate(a)));
+      expect(rows).toEqual([
+        {
+          email: "hong.gildong@school.example",
+          orgUnitPath: a === "move" ? "/2026학년도/4-1" : "",
+          problem: "",
+        },
+      ]);
+    }
+  });
+});
+
+describe("validateActionRows: 파일 전체 검사", () => {
+  it("이메일 머리글이 없으면 오류", () => {
+    const r = validateActionRows([["메일"], ["hong"]], DOMAIN, OUS, "suspend", ME);
+    expect(r).toEqual({ error: "첫 줄(머리글)이 양식과 다릅니다. '이메일'로 시작해야 합니다. 양식을 내려받아 쓰세요." });
+  });
+
+  it("이동인데 조직단위 머리글이 없으면 오류", () => {
+    const r = validateActionRows([["이메일"], ["hong"]], DOMAIN, OUS, "move", ME);
+    expect(r).toEqual({
+      error: "첫 줄(머리글)이 양식과 다릅니다. '이메일,조직단위'로 시작해야 합니다. 양식을 내려받아 쓰세요.",
+    });
+  });
+
+  it("이동이 아니면 다른 열이 있어도 이메일만 본다", () => {
+    expect(actionRowsOf("unsuspend", [["이름", " 이메일 ", "조직단위"], ["홍길동", "hong", "/없음"]])).toEqual([
+      { email: "hong@school.example", orgUnitPath: "", problem: "" },
+    ]);
+  });
+
+  it("내용 줄이 없으면 오류", () => {
+    const r = validateActionRows([["이메일"], [""], [" "]], DOMAIN, OUS, "suspend", ME);
+    expect(r).toEqual({ error: "이메일이 들어 있는 줄이 없습니다. 둘째 줄부터 한 사람씩 쓰세요." });
+  });
+
+  it("빈 줄은 결과에서 빠진다", () => {
+    const rows = actionRowsOf("suspend", parseCsv("이메일\nhong\n\n \nkim\n"));
+    expect(rows.map((x) => x.email)).toEqual(["hong@school.example", "kim@school.example"]);
+  });
+
+  it(`${MAX_ROWS}줄까지는 받고, 넘으면 오류`, () => {
+    const body = (n: number) => Array.from({ length: n }, (_, i) => [`user${i}`]);
+    expect(actionRowsOf("reset", [["이메일"], ...body(MAX_ROWS)])).toHaveLength(MAX_ROWS);
+    expect(validateActionRows([["이메일"], ...body(MAX_ROWS + 1)], DOMAIN, OUS, "reset", ME)).toEqual({
+      error: `한 번에 ${MAX_ROWS}명까지 처리할 수 있습니다. 이 파일은 ${MAX_ROWS + 1}줄입니다. 파일을 나눠 올리세요.`,
+    });
+  });
+});
+
+describe("validateActionRows: 줄별 검사", () => {
+  it("이메일 앞부분만 쓰면 도메인을 붙이고 소문자로 바꾼다", () => {
+    expect(actionRowsOf("suspend", [["이메일"], [" Hong.Gil_Dong-1 "], ["KIM@SCHOOL.EXAMPLE"]])).toEqual([
+      { email: "hong.gil_dong-1@school.example", orgUnitPath: "", problem: "" },
+      { email: "kim@school.example", orgUnitPath: "", problem: "" },
+    ]);
+  });
+
+  it("빈 이메일·다른 도메인·허용 안 되는 글자·파일 안 중복은 문제", () => {
+    const rows = actionRowsOf("unsuspend", [["이메일", "메모"], ["", "x"], ["hong@other.example"], ["a+b"], ["kim"], ["KIM"]]);
+    expect(rows.map((x) => x.problem)).toEqual([
+      "이메일이 비었습니다",
+      "@school.example이 아닌 이메일입니다",
+      "이메일 앞부분은 영문·숫자·. _ -만 됩니다",
+      "",
+      "파일 안에 중복",
+    ]);
+  });
+
+  it("정지·초기화는 본인 계정이면 문제(대소문자 무시, 앞부분만 써도)", () => {
+    for (const a of ["suspend", "reset"] as const) {
+      const rows = actionRowsOf(a, [["이메일"], ["ADMIN"], ["hong"]]);
+      expect(rows.map((x) => x.problem)).toEqual(["본인 계정은 할 수 없습니다", ""]);
+    }
+    const r = validateActionRows([["이메일"], ["admin@school.example"]], DOMAIN, OUS, "suspend", "Admin@School.Example");
+    expect("rows" in r && r.rows[0].problem).toBe("본인 계정은 할 수 없습니다");
+  });
+
+  it("이동·정지 해제는 본인 계정도 된다", () => {
+    expect(actionRowsOf("unsuspend", [["이메일"], ["admin"]])[0].problem).toBe("");
+    expect(actionRowsOf("move", [["이메일", "조직단위"], ["admin", "/2026학년도"]])[0].problem).toBe("");
+  });
+
+  it("이동: 조직단위가 비면 문제(최상위로 보지 않는다)", () => {
+    expect(actionRowsOf("move", [["이메일", "조직단위"], ["hong", " "], ["kim"]]).map((x) => x.problem)).toEqual([
+      "조직 단위가 비었습니다",
+      "조직 단위가 비었습니다",
+    ]);
+  });
+
+  it("이동: /로 시작하지 않으면 붙이고, 최상위(/)도 받는다", () => {
+    expect(actionRowsOf("move", [["조직단위", "이메일"], ["2026학년도/4-1", "hong"], ["/", "kim"]])).toEqual([
+      { email: "hong@school.example", orgUnitPath: "/2026학년도/4-1", problem: "" },
+      { email: "kim@school.example", orgUnitPath: "/", problem: "" },
+    ]);
+  });
+
+  it("이동: 목록에 없는 조직단위는 문제", () => {
+    expect(actionRowsOf("move", [["이메일", "조직단위"], ["hong", "/2026학년도/9-9"]])[0]).toEqual({
+      email: "hong@school.example",
+      orgUnitPath: "/2026학년도/9-9",
+      problem: "조직 단위가 없습니다",
+    });
+  });
+
+  it("문제가 여럿이면 쉼표로 이어 붙인다", () => {
+    expect(actionRowsOf("move", [["이메일", "조직단위"], ["a+b", "/없음"]])[0].problem).toBe(
+      "이메일 앞부분은 영문·숫자·. _ -만 됩니다, 조직 단위가 없습니다",
+    );
   });
 });

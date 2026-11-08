@@ -119,6 +119,89 @@ export function validateRows(
   };
 }
 
+// ---- 일괄 작업(CSV): 이메일 목록으로 정지·해제·이동·비밀번호 초기화 ----
+
+export type BulkAction = "suspend" | "unsuspend" | "move" | "reset";
+
+export const ACTION_LABEL: Record<BulkAction, string> = {
+  suspend: "정지",
+  unsuspend: "정지 해제",
+  move: "조직 단위 이동",
+  reset: "비밀번호 초기화",
+};
+
+// 내려받는 양식: 머리글 + 예시 한 줄
+export function actionTemplate(a: BulkAction): string {
+  return a === "move" ? "이메일,조직단위\nhong.gildong,/2026학년도/4-1\n" : "이메일\nhong.gildong\n";
+}
+
+export interface ActionRow {
+  email: string;
+  orgUnitPath: string; // move일 때만 쓴다. 나머지는 빈 값
+  problem: string; // 비어 있으면 정상
+}
+
+// 표(머리글 포함)를 줄별로 검증한다. 파일 자체가 잘못됐으면 { error }.
+// ouPaths: move일 때 listOrgUnits()의 orgUnitPath 목록(최상위 "/"는 따로 허용). me: 로그인한 관리자 이메일.
+export function validateActionRows(
+  table: string[][],
+  domain: string,
+  ouPaths: string[],
+  action: BulkAction,
+  me: string,
+): { rows: ActionRow[] } | { error: string } {
+  const isMove = action === "move";
+  const head = (table[0] ?? []).map((h) => h.trim());
+  const emailCol = head.indexOf("이메일");
+  const ouCol = head.indexOf("조직단위");
+  if (emailCol < 0 || (isMove && ouCol < 0)) {
+    const need = isMove ? "이메일,조직단위" : "이메일";
+    return { error: `첫 줄(머리글)이 양식과 다릅니다. '${need}'로 시작해야 합니다. 양식을 내려받아 쓰세요.` };
+  }
+  // 엑셀이 끝에 붙이는 빈 줄(,,)은 뺀다.
+  const body = table.slice(1).filter((r) => r.some((c) => c.trim() !== ""));
+  if (body.length === 0) return { error: "이메일이 들어 있는 줄이 없습니다. 둘째 줄부터 한 사람씩 쓰세요." };
+  if (body.length > MAX_ROWS) {
+    return { error: `한 번에 ${MAX_ROWS}명까지 처리할 수 있습니다. 이 파일은 ${body.length}줄입니다. 파일을 나눠 올리세요.` };
+  }
+
+  const ous = new Set(["/", ...ouPaths]);
+  const seen = new Set<string>();
+  const dom = domain.toLowerCase();
+  const self = me.toLowerCase();
+  return {
+    rows: body.map((r) => {
+      const get = (c: number) => (c < 0 ? "" : (r[c] ?? "").trim());
+      const problems: string[] = [];
+
+      let email = get(emailCol).toLowerCase();
+      if (!email) problems.push("이메일이 비었습니다");
+      else {
+        if (!email.includes("@")) email = `${email}@${dom}`;
+        const at = email.lastIndexOf("@");
+        const local = email.slice(0, at);
+        if (email.slice(at + 1) !== dom) problems.push(`@${dom}이 아닌 이메일입니다`);
+        else if (!/^[a-z0-9._-]+$/.test(local)) problems.push("이메일 앞부분은 영문·숫자·. _ -만 됩니다");
+        if (seen.has(email)) problems.push("파일 안에 중복");
+        seen.add(email);
+        if (email === self && (action === "suspend" || action === "reset")) problems.push("본인 계정은 할 수 없습니다");
+      }
+
+      let orgUnitPath = "";
+      if (isMove) {
+        orgUnitPath = get(ouCol);
+        if (!orgUnitPath) problems.push("조직 단위가 비었습니다");
+        else {
+          if (!orgUnitPath.startsWith("/")) orgUnitPath = `/${orgUnitPath}`;
+          if (!ous.has(orgUnitPath)) problems.push("조직 단위가 없습니다");
+        }
+      }
+
+      return { email, orgUnitPath, problem: problems.join(", ") };
+    }),
+  };
+}
+
 // 내려받는 파일 이름 끝에 붙이는 시각: YYYYMMDD_HHMM
 export function stamp(d = new Date()): string {
   const p = (n: number) => String(n).padStart(2, "0");

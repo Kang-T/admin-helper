@@ -19,6 +19,7 @@ import MoveOu from "./features/MoveOu";
 import CreateUser from "./features/CreateUser";
 import BulkCreate from "./features/BulkCreate";
 import UserList from "./features/UserList";
+import BulkAction from "./features/BulkAction";
 import ApproveTeacher from "./features/ApproveTeacher";
 import DiagnoseClassroom from "./features/DiagnoseClassroom";
 
@@ -30,6 +31,7 @@ const PANELS: Record<TaskId, ComponentType<PanelProps>> = {
   "create-user": CreateUser,
   "bulk-create": BulkCreate,
   "user-list": UserList,
+  "bulk-csv": BulkAction,
   "approve-teacher": ApproveTeacher,
   "diagnose-classroom": DiagnoseClassroom,
 };
@@ -43,6 +45,7 @@ const TASK_NAV: { id: TaskId; label: string; icon: string; section: "사용자" 
   { id: "create-user", label: "신규 계정", icon: "person_add", section: "사용자" },
   { id: "bulk-create", label: "일괄 생성(CSV)", icon: "upload_file", section: "사용자" },
   { id: "user-list", label: "목록·일괄 작업", icon: "checklist", section: "사용자" },
+  { id: "bulk-csv", label: "일괄 작업(CSV)", icon: "task_alt", section: "사용자" },
   { id: "approve-teacher", label: "교사 승인", icon: "verified", section: "클래스룸" },
   { id: "diagnose-classroom", label: "왜 수업을 못 만드나", icon: "troubleshoot", section: "클래스룸" },
 ];
@@ -340,7 +343,8 @@ function Main({ account, onLogout }: { account: Account; onLogout: () => void })
       view.id !== "lookup" &&
       view.id !== "create-user" &&
       view.id !== "bulk-create" &&
-      view.id !== "user-list";
+      view.id !== "user-list" &&
+      view.id !== "bulk-csv";
     body = (
       <>
         {showUser && <UserCard user={user} domain={account.domain} onAction={openTask} />}
