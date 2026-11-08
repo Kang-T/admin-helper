@@ -71,7 +71,8 @@ function fromPolicy(
 ): Check {
   const { top, others } = resolvePolicy(policies, isType, subOuIds);
   const tail = others ? ` (하위 조직 ${others}곳에 다른 설정 있음)` : "";
-  if (!top) return { title, status: "unknown", detail: `정책을 읽지 못했습니다${tail}`, link };
+  // 구글이 기본값 그대로인 설정은 정책으로 돌려주지 않을 때가 있다(효림초: drive_and_docs.external_sharing 없음, 2026-11-08 확인).
+  if (!top) return { title, status: "unknown", detail: `구글이 이 설정을 API로 돌려주지 않습니다. 콘솔에서 직접 확인하세요${tail}`, link };
   const v = judge(top);
   return { title, status: v.status, detail: v.detail + tail, link };
 }
@@ -134,6 +135,8 @@ export function twoStepCheck(policies: Policy[], subOuIds: string[], now: Date =
     if (from === undefined || from === null || from === "") return { status: "pass", detail: "강제 안 함" };
     const t = typeof from === "string" ? Date.parse(from) : NaN;
     if (Number.isNaN(t)) return unknownValue(from);
+    // 강제가 꺼져 있으면 "1970-01-01T00:00:00Z"로 온다(2026-11-08 효림초 하위 OU에서 확인).
+    if (t <= Date.UTC(1971, 0, 1)) return { status: "pass", detail: "강제 안 함" };
     if (t <= now.getTime()) {
       return {
         status: "info",

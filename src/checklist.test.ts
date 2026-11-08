@@ -40,7 +40,7 @@ describe("최상위 정책 고르기(드라이브 외부 공유로 시험)", () 
     expect(driveSharingCheck([], SUBS)).toEqual({
       title: "드라이브 외부 공유",
       status: "unknown",
-      detail: "정책을 읽지 못했습니다",
+      detail: "구글이 이 설정을 API로 돌려주지 않습니다. 콘솔에서 직접 확인하세요",
       link: "drive-sharing",
     });
   });
@@ -48,7 +48,7 @@ describe("최상위 정책 고르기(드라이브 외부 공유로 시험)", () 
   it("하위 OU에만 있고 최상위에 없으면 확인 불가 + 하위 개수", () => {
     const c = driveSharingCheck([policy("sub1", DRIVE, { externalSharingMode: "ALLOWED" })], SUBS);
     expect(c.status).toBe("unknown");
-    expect(c.detail).toBe("정책을 읽지 못했습니다 (하위 조직 1곳에 다른 설정 있음)");
+    expect(c.detail).toBe("구글이 이 설정을 API로 돌려주지 않습니다. 콘솔에서 직접 확인하세요 (하위 조직 1곳에 다른 설정 있음)");
   });
 
   it("하위 OU 목록에 없는 OU의 정책을 최상위로 본다(id: 접두사는 떼고 비교)", () => {
@@ -168,7 +168,7 @@ describe("classroomJoinCheck", () => {
   });
 
   it("정책 없음", () => {
-    expect(classroomJoinCheck([], SUBS).detail).toBe("정책을 읽지 못했습니다");
+    expect(classroomJoinCheck([], SUBS).detail).toBe("구글이 이 설정을 API로 돌려주지 않습니다. 콘솔에서 직접 확인하세요");
   });
 });
 
@@ -193,6 +193,13 @@ describe("teacherPermissionCheck", () => {
 
   it("모르는 값 → 확인 불가", () => {
     expect(one("X").status).toBe("unknown");
+  });
+});
+
+describe("twoStepCheck epoch", () => {
+  it("1970-01-01은 강제 안 함", () => {
+    const p = { setting: { type: "settings/security.two_step_verification_enforcement", value: { enforcedFrom: "1970-01-01T00:00:00Z" } }, policyQuery: { orgUnit: "orgUnits/root1", sortOrder: 1 } } as never;
+    expect(twoStepCheck([p], []).detail).toBe("강제 안 함");
   });
 });
 
@@ -255,7 +262,7 @@ describe("gmailStatusCheck", () => {
   });
 
   it("다른 서비스의 켜짐·꺼짐은 보지 않는다", () => {
-    expect(one({ serviceState: "DISABLED" }, "settings/classroom.service_status").detail).toBe("정책을 읽지 못했습니다");
+    expect(one({ serviceState: "DISABLED" }, "settings/classroom.service_status").detail).toBe("구글이 이 설정을 API로 돌려주지 않습니다. 콘솔에서 직접 확인하세요");
   });
 
   it("하위 OU에 꺼진 곳이 있으면 개수", () => {
