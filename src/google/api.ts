@@ -202,6 +202,15 @@ export function getOrgUnit(path: string): Promise<OrgUnit> {
   return request(`${DIRECTORY}/customer/my_customer/orgunits/${segments}`);
 }
 
+// "/2027학년도/6-1" → 이름 "6-1", 부모 "/2027학년도". 최상위 바로 아래면 부모는 "/".
+export function createOrgUnit(path: string): Promise<OrgUnit> {
+  const cut = path.lastIndexOf("/");
+  return request(`${DIRECTORY}/customer/my_customer/orgunits`, "POST", {
+    name: path.slice(cut + 1),
+    parentOrgUnitPath: path.slice(0, cut) || "/",
+  });
+}
+
 // ---- 라이선스 ----
 
 const EDUCATION_SKUS: Record<string, string> = {

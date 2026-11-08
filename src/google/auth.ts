@@ -8,7 +8,7 @@ const SCOPE_LIST = [
   "https://www.googleapis.com/auth/admin.directory.user",
   "https://www.googleapis.com/auth/admin.directory.group.member",
   "https://www.googleapis.com/auth/admin.directory.group.readonly",
-  "https://www.googleapis.com/auth/admin.directory.orgunit.readonly",
+  "https://www.googleapis.com/auth/admin.directory.orgunit",
   "https://www.googleapis.com/auth/apps.licensing",
   "https://www.googleapis.com/auth/classroom.rosters.readonly",
   "https://www.googleapis.com/auth/cloud-identity.policies.readonly",

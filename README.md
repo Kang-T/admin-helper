@@ -24,6 +24,7 @@ Google Admin Console에서 자주 하는 일을 한국어 버튼 하나로 처�
 | 일괄 생성(CSV) | 성·이름·이메일·조직단위 CSV로 최대 500명, 임시 비밀번호 결과 파일 |
 | 사용자 목록·일괄 작업 | 조직·상태·미접속으로 걸러 여러 명을 한 번에 정지·해제·OU 이동, 목록·결과 CSV |
 | 일괄 작업(CSV) | 이메일 목록 CSV로 최대 500명을 정지·해제·OU 이동·비밀번호 초기화, 결과 CSV(초기화는 임시 비밀번호 포함) |
+| 학년 진급 | 학년도 OU의 반 OU 학생을 새 학년도 반(5-1 → 6-1)으로 한 번에 이동, 마지막 학년은 졸업생 OU로 옮기고 정지, 반이 바뀌는 학생은 CSV로 개별 지정, 없는 OU는 자동 생성, 결과 CSV |
 | 클래스룸 교사 승인 | `classroom_teachers` 그룹에 추가 |
 | 클래스룸 진단 | "왜 수업을 못 만드나"를 5단계로 점검, 고칠 수 있는 건 그 자리에서 |
 | 설정 바로가기 | API로 바꿀 수 없는 설정은 콘솔의 정확한 화면 + 단계 안내 |
@@ -60,7 +61,7 @@ npm test                     # 자동 테스트(CSV 읽기·검증, 진단 판�
 ## 사용하는 Google API와 요청 범위
 
 Admin SDK Directory(사용자·그룹·OU), Enterprise License Manager, Google Classroom(교사 프로필), Cloud Identity Policy(서비스 상태 읽기).
-요청 범위: `admin.directory.user`, `admin.directory.group.member`, `admin.directory.group.readonly`, `admin.directory.orgunit.readonly`,
+요청 범위: `admin.directory.user`, `admin.directory.group.member`, `admin.directory.group.readonly`, `admin.directory.orgunit`,
 `apps.licensing`, `classroom.rosters.readonly`, `cloud-identity.policies.readonly`, `userinfo.email`.
 
 ## 알려진 한계
