@@ -216,12 +216,15 @@ function Main({ account, onLogout }: { account: Account; onLogout: () => void })
   const [view, setView] = useState<View>({ kind: "home" });
   const [user, setUser] = useState<User | null>(null);
   const [drawer, setDrawer] = useState(false); // 900px 미만에서 왼쪽 메뉴 서랍
+  // 일괄 작업 실행 중: 화면을 옮기면 작업 패널이 사라져 임시 비밀번호를 잃으므로 이동을 막는다.
+  const [locked, setLocked] = useState(false);
 
   const tasks = TASKS.filter((t) => matches(query, t));
   const settings = SETTINGS.filter((s) => matches(query, s));
   const searching = query.trim() !== "";
 
   function go(next: View) {
+    if (locked) return;
     setView(next);
     setQuery("");
     setDrawer(false);
@@ -231,6 +234,7 @@ function Main({ account, onLogout }: { account: Account; onLogout: () => void })
   const showAll = () => go({ kind: "settings", group: null });
 
   function runFirst() {
+    if (locked) return;
     if (tasks[0]) openTask(tasks[0].id);
     else if (settings[0]) window.open(consoleUrl(settings[0].url), "_blank", "noopener,noreferrer");
   }
@@ -241,7 +245,8 @@ function Main({ account, onLogout }: { account: Account; onLogout: () => void })
       type="button"
       className={`item${on ? " on" : ""}`}
       aria-current={on ? "page" : undefined}
-      onClick={onClick}
+      aria-disabled={locked || undefined}
+      onClick={() => !locked && onClick()}
     >
       <span className="icon" aria-hidden="true">
         {icon}
@@ -322,6 +327,7 @@ function Main({ account, onLogout }: { account: Account; onLogout: () => void })
         user={user}
         setUser={setUser}
         openTask={openTask}
+        setLocked={setLocked}
       />
     );
     // 찾기·상태는 패널 안에 사용자 카드가 있고, 신규 계정·일괄 생성은 선택한 사용자와 관계없다.
@@ -416,16 +422,18 @@ function Main({ account, onLogout }: { account: Account; onLogout: () => void })
             type="search"
             placeholder="작업 또는 설정 검색"
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            disabled={locked}
+            onChange={(e) => !locked && setQuery(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && runFirst()}
           />
         </div>
         <div className="who">
+          {locked && <span className="chip warn">일괄 작업 중입니다. 끝날 때까지 메뉴를 쓸 수 없습니다</span>}
           <span className="who-email">{account.email}</span>
           <div className="avatar" aria-hidden="true">
             {account.email.slice(0, 1).toUpperCase()}
           </div>
-          <button type="button" className="btn text" onClick={onLogout}>
+          <button type="button" className="btn text" onClick={() => !locked && onLogout()} disabled={locked}>
             로그아웃
           </button>
         </div>

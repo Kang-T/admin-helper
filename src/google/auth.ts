@@ -60,6 +60,12 @@ export function hasToken(): boolean {
   return !!token && Date.now() < expiresAt;
 }
 
+// 토큰이 앞으로 몇 초 더 쓸 수 있는지. 없거나 만료됐으면 0.
+export function tokenSecondsLeft(): number {
+  if (!token) return 0;
+  return Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
+}
+
 // 돌아온 직후의 로그인 오류(있으면). 한 번 읽으면 지운다.
 export function takeLoginError(): string {
   const e = loginError;

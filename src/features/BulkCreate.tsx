@@ -1,6 +1,7 @@
 import { useEffect, useState, type ChangeEvent } from "react";
 import Confirm from "../components/Confirm";
 import { createUser, errorMessage, isStatus, listOrgUnits } from "../google/api";
+import { clearToken, getToken, tokenSecondsLeft } from "../google/auth";
 import type { PanelProps } from "../catalog/tasks";
 import { MAX_ROWS, TEMPLATE, decodeCsv, downloadCsv, parseCsv, toCsv, validateRows, type BulkRow } from "../csv";
 import { generatePassword } from "./ResetPassword";
@@ -16,6 +17,7 @@ interface Result {
 const OUTCOME_LABEL: Record<Outcome, string> = { ok: "성공", exists: "이미 있음", fail: "실패" };
 const OUTCOME_CHIP: Record<Outcome, string> = { ok: "chip ok", exists: "chip warn", fail: "chip err" };
 const CONCURRENCY = 3;
+const MIN_LOGIN_SECONDS = 600; // 로그인이 이보다 적게 남았으면 시작하기 전에 다시 로그인하게 한다
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 // 한 명 만들기. 409는 이미 있음. 429·500·503은 2초 뒤 한 번만 다시 시도한다.
@@ -51,7 +53,7 @@ function stamp(d = new Date()): string {
   return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}`;
 }
 
-export default function BulkCreate({ domain }: PanelProps) {
+export default function BulkCreate({ domain, setLocked }: PanelProps) {
   const [step, setStep] = useState<"pick" | "review" | "run" | "done">("pick");
   const [fileError, setFileError] = useState("");
   const [reading, setReading] = useState(false);
@@ -59,6 +61,7 @@ export default function BulkCreate({ domain }: PanelProps) {
   const [confirming, setConfirming] = useState(false);
   const [doneCount, setDoneCount] = useState(0);
   const [results, setResults] = useState<Result[]>([]);
+  const [, recheck] = useState(0); // 「N명 만들기」를 누를 때 남은 로그인 시간을 다시 보게 한다
 
   const good = rows.filter((r) => !r.problem);
   const bad = rows.length - good.length;
@@ -73,6 +76,9 @@ export default function BulkCreate({ domain }: PanelProps) {
     window.addEventListener("beforeunload", warn);
     return () => window.removeEventListener("beforeunload", warn);
   }, [step]);
+
+  // 실행 중에 패널이 사라지면(정상적으로는 일어나지 않는다) 메뉴 잠금을 푼다.
+  useEffect(() => () => setLocked?.(false), [setLocked]);
 
   async function onFile(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -104,6 +110,7 @@ export default function BulkCreate({ domain }: PanelProps) {
   async function run() {
     setConfirming(false);
     setStep("run");
+    setLocked?.(true);
     setDoneCount(0);
     const out: Result[] = new Array(good.length);
     let next = 0;
@@ -114,7 +121,11 @@ export default function BulkCreate({ domain }: PanelProps) {
         setDoneCount((n) => n + 1);
       }
     };
-    await Promise.all(Array.from({ length: CONCURRENCY }, worker));
+    try {
+      await Promise.all(Array.from({ length: CONCURRENCY }, worker));
+    } finally {
+      setLocked?.(false);
+    }
     setResults(out);
     setStep("done");
   }
@@ -132,6 +143,12 @@ export default function BulkCreate({ domain }: PanelProps) {
       `계정_생성결과_${stamp()}.csv`,
       toCsv([["이메일", "성", "이름", "조직단위", "임시 비밀번호", "결과"], ...lines]),
     );
+  }
+
+  // 이 탭이 구글 로그인 화면으로 갔다가 홈으로 돌아온다. 고른 파일은 사라진다.
+  function relogin() {
+    clearToken();
+    getToken();
   }
 
   function restart() {
@@ -167,6 +184,8 @@ export default function BulkCreate({ domain }: PanelProps) {
   }
 
   if (step === "review") {
+    const secondsLeft = tokenSecondsLeft();
+    const loginLow = secondsLeft < MIN_LOGIN_SECONDS;
     return (
       <>
         <p>
@@ -206,15 +225,31 @@ export default function BulkCreate({ domain }: PanelProps) {
             </tbody>
           </table>
         </div>
+        {loginLow && (
+          <p className="msg warn">
+            로그인이 {Math.ceil(secondsLeft / 60)}분 뒤 만료됩니다. 일괄 작업은 1시간 안에 끝나지 않을 수 있어, 다시
+            로그인한 뒤 시작하세요.
+            <br />
+            다시 로그인하면 파일을 다시 골라야 합니다.
+          </p>
+        )}
         <div className="actions">
-          <button
-            type="button"
-            className="btn filled"
-            disabled={good.length === 0}
-            onClick={() => setConfirming(true)}
-          >
-            {good.length}명 만들기
-          </button>
+          {loginLow ? (
+            <button type="button" className="btn filled" onClick={relogin}>
+              다시 로그인
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="btn filled"
+              disabled={good.length === 0}
+              onClick={() =>
+                tokenSecondsLeft() < MIN_LOGIN_SECONDS ? recheck((n) => n + 1) : setConfirming(true)
+              }
+            >
+              {good.length}명 만들기
+            </button>
+          )}
           <button type="button" className="btn text" onClick={restart}>
             다른 파일 선택
           </button>

@@ -38,6 +38,7 @@ npm install
 cp .env.example .env.local   # VITE_GOOGLE_CLIENT_ID 채우기
 npm run dev                  # http://localhost:5173
 npm run build                # 타입 검사 + dist/ 생성
+npm test                     # 자동 테스트(CSV 읽기·검증, 진단 판정 함수)
 ```
 
 3. 배포: 정적 호스팅 어디든 됩니다(Vercel·Netlify·Firebase Hosting·학교 서버). 빌드 명령 `npm run build`, 출력 폴더 `dist`,

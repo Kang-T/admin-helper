@@ -23,6 +23,7 @@ export interface PanelProps {
   user: User | null;
   setUser: (user: User | null) => void;
   openTask: (id: TaskId) => void;
+  setLocked?: (on: boolean) => void; // 오래 걸리는 작업 중 화면 이동(메뉴·검색·로그아웃)을 막는다
 }
 
 export const TASKS: Task[] = [
