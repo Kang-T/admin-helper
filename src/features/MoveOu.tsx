@@ -10,15 +10,17 @@ export function OuSelect({
   units,
   value,
   onChange,
+  rootLabel = "/ (최상위)",
 }: {
   id: string;
   units: OrgUnit[];
   value: string;
   onChange: (path: string) => void;
+  rootLabel?: string;
 }) {
   return (
     <select id={id} value={value} onChange={(e) => onChange(e.target.value)}>
-      <option value="/">/ (최상위)</option>
+      <option value="/">{rootLabel}</option>
       {units.map((u) => (
         <option key={u.orgUnitPath} value={u.orgUnitPath}>
           {"    ".repeat(u.orgUnitPath.split("/").length - 2)}

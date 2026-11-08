@@ -3,7 +3,8 @@ import Confirm from "../components/Confirm";
 import { createUser, errorMessage, isStatus, listOrgUnits } from "../google/api";
 import { clearToken, getToken, tokenSecondsLeft } from "../google/auth";
 import type { PanelProps } from "../catalog/tasks";
-import { MAX_ROWS, TEMPLATE, decodeCsv, downloadCsv, parseCsv, toCsv, validateRows, type BulkRow } from "../csv";
+import { runBulk, withRetry } from "../bulk";
+import { MAX_ROWS, TEMPLATE, decodeCsv, downloadCsv, parseCsv, stamp, toCsv, validateRows, type BulkRow } from "../csv";
 import { generatePassword } from "./ResetPassword";
 
 type Outcome = "ok" | "exists" | "fail";
@@ -16,41 +17,32 @@ interface Result {
 
 const OUTCOME_LABEL: Record<Outcome, string> = { ok: "성공", exists: "이미 있음", fail: "실패" };
 const OUTCOME_CHIP: Record<Outcome, string> = { ok: "chip ok", exists: "chip warn", fail: "chip err" };
-const CONCURRENCY = 3;
 const MIN_LOGIN_SECONDS = 600; // 로그인이 이보다 적게 남았으면 시작하기 전에 다시 로그인하게 한다
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-// 한 명 만들기. 409는 이미 있음. 429·500·503은 2초 뒤 한 번만 다시 시도한다.
+// 한 명 만들기. 409는 이미 있음. 429·500·503은 2초 뒤 한 번만 다시 시도한다(withRetry).
 async function createOne(row: BulkRow): Promise<Result> {
   const password = row.password || generatePassword();
-  for (let attempt = 0; ; attempt++) {
-    try {
-      await createUser({
+  let attempts = 0;
+  try {
+    await withRetry(() => {
+      attempts++;
+      return createUser({
         primaryEmail: row.email,
         name: { familyName: row.familyName, givenName: row.givenName },
         password,
         changePasswordAtNextLogin: true,
         orgUnitPath: row.orgUnitPath,
       });
-      return { row, password, outcome: "ok", message: "" };
-    } catch (e) {
-      if (isStatus(e, 409)) {
-        // 첫 요청이 서버 오류로 끝났지만 실제로는 만들어졌을 수 있다. 비밀번호를 장담할 수 없다.
-        const message = attempt > 0 ? "다시 시도하는 사이에 생겼습니다. 비밀번호 초기화로 새로 발급하세요" : "";
-        return { row, password: "", outcome: "exists", message };
-      }
-      if (attempt === 0 && [429, 500, 503].some((s) => isStatus(e, s))) {
-        await sleep(2000);
-        continue;
-      }
-      return { row, password: "", outcome: "fail", message: errorMessage(e) };
+    });
+    return { row, password, outcome: "ok", message: "" };
+  } catch (e) {
+    if (isStatus(e, 409)) {
+      // 첫 요청이 서버 오류로 끝났지만 실제로는 만들어졌을 수 있다. 비밀번호를 장담할 수 없다.
+      const message = attempts > 1 ? "다시 시도하는 사이에 생겼습니다. 비밀번호 초기화로 새로 발급하세요" : "";
+      return { row, password: "", outcome: "exists", message };
     }
+    return { row, password: "", outcome: "fail", message: errorMessage(e) };
   }
-}
-
-function stamp(d = new Date()): string {
-  const p = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}`;
 }
 
 export default function BulkCreate({ domain, setLocked }: PanelProps) {
@@ -112,17 +104,9 @@ export default function BulkCreate({ domain, setLocked }: PanelProps) {
     setStep("run");
     setLocked?.(true);
     setDoneCount(0);
-    const out: Result[] = new Array(good.length);
-    let next = 0;
-    const worker = async () => {
-      while (next < good.length) {
-        const i = next++;
-        out[i] = await createOne(good[i]);
-        setDoneCount((n) => n + 1);
-      }
-    };
+    let out: Result[] = [];
     try {
-      await Promise.all(Array.from({ length: CONCURRENCY }, worker));
+      out = await runBulk(good, createOne, setDoneCount);
     } finally {
       setLocked?.(false);
     }

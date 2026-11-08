@@ -7,6 +7,7 @@ export type TaskId =
   | "move-ou"
   | "create-user"
   | "bulk-create"
+  | "user-list"
   | "approve-teacher"
   | "diagnose-classroom";
 
@@ -24,6 +25,7 @@ export interface PanelProps {
   setUser: (user: User | null) => void;
   openTask: (id: TaskId) => void;
   setLocked?: (on: boolean) => void; // 오래 걸리는 작업 중 화면 이동(메뉴·검색·로그아웃)을 막는다
+  me?: string; // 로그인한 관리자 이메일
 }
 
 export const TASKS: Task[] = [
@@ -62,6 +64,12 @@ export const TASKS: Task[] = [
     title: "일괄 생성(CSV)",
     description: "CSV 파일로 여러 계정을 한 번에 만들고 임시 비밀번호를 발급합니다",
     keywords: ["일괄", "CSV", "엑셀", "여러 명", "전입", "신입생", "대량"],
+  },
+  {
+    id: "user-list",
+    title: "사용자 목록·일괄 작업",
+    description: "조직·상태·미접속으로 걸러 여러 명을 한 번에 정지·해제·이동합니다",
+    keywords: ["목록", "일괄", "미접속", "안 쓰는", "졸업", "전출", "정지", "이동", "CSV"],
   },
   {
     id: "approve-teacher",

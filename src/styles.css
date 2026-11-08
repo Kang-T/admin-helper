@@ -806,6 +806,63 @@ details ol {
   margin-top: 12px;
   overflow-x: auto;
 }
+.table-wrap.tall {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+/* ---- 사용자 목록: 필터·선택 작업 줄(좁으면 줄바꿈), 체크박스, 표 안 이름 링크 ---- */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px 16px;
+  margin-top: 16px;
+}
+.filters > div {
+  min-width: 160px;
+}
+.filters > strong {
+  line-height: 40px;
+}
+.filters label {
+  margin-top: 0;
+}
+.filters .check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  height: 40px;
+}
+.filters .check label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-weight: 400;
+}
+.filters .check input[type="number"] {
+  width: 72px;
+}
+input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  padding: 0;
+}
+.table .link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--blue-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.table .link:hover {
+  text-decoration: underline;
+}
 .table {
   width: 100%;
   border-collapse: collapse;

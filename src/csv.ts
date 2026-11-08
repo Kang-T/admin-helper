@@ -119,6 +119,12 @@ export function validateRows(
   };
 }
 
+// 내려받는 파일 이름 끝에 붙이는 시각: YYYYMMDD_HHMM
+export function stamp(d = new Date()): string {
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}`;
+}
+
 // UTF-8 BOM을 붙여 내려받게 한다(엑셀이 한글을 바로 읽는다). 파일은 브라우저 안에서만 만들어진다.
 export function downloadCsv(filename: string, text: string): void {
   const url = URL.createObjectURL(new Blob(["﻿" + text], { type: "text/csv;charset=utf-8" }));

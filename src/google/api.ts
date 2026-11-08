@@ -94,6 +94,20 @@ export async function searchUsers(input: string): Promise<User[]> {
   return (await Promise.all(lists)).flat().filter((u) => !seen.has(u.primaryEmail) && seen.add(u.primaryEmail));
 }
 
+// 목록 한 페이지(최대 500명). orgUnitPath를 주면 그 조직으로 좁힌다("/"는 전체).
+export async function listUsers(opts: {
+  orgUnitPath?: string;
+  pageToken?: string;
+}): Promise<{ users: User[]; nextPageToken?: string }> {
+  const fields =
+    "nextPageToken,users(primaryEmail,name,orgUnitPath,suspended,suspensionReason,archived,lastLoginTime,creationTime,isAdmin,isDelegatedAdmin,isEnrolledIn2Sv,changePasswordAtNextLogin)";
+  let url = `${DIRECTORY}/users?customer=my_customer&maxResults=500&orderBy=email&viewType=admin_view&fields=${enc(fields)}`;
+  if (opts.orgUnitPath && opts.orgUnitPath !== "/") url += `&query=${enc(`orgUnitPath='${opts.orgUnitPath}'`)}`;
+  if (opts.pageToken) url += `&pageToken=${enc(opts.pageToken)}`;
+  const data = await request<{ users?: User[]; nextPageToken?: string }>(url);
+  return { users: data.users ?? [], nextPageToken: data.nextPageToken };
+}
+
 export function getUser(email: string): Promise<User> {
   return request(`${DIRECTORY}/users/${enc(email)}`);
 }
