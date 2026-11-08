@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>내 자료 옮기기 — Admin Helper</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--line:#dadce0;--line-soft:#e8eaed;--text:#202124;--text2:#5f6368;--blue:#1a73e8;--blue-text:#1967d2;--blue-bg:#e8f0fe;--hover:#f1f3f4;--ok:#188038;--warn-bg:#fef7e0;--warn-text:#b06000}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Google Sans","Noto Sans KR",-apple-system,sans-serif;color:var(--text);background:#fff;line-height:1.6;font-size:18px}
+header{height:64px;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 24px;gap:12px}
+header .logo{width:28px;height:28px;border-radius:6px;background:var(--blue)}
+header b{font-weight:500;font-size:20px}
+header span{color:var(--text2);font-size:14px}
+main{max-width:760px;margin:0 auto;padding:32px 16px 80px}
+h1{font-size:30px;font-weight:500;margin:0 0 8px;line-height:1.3}
+.lead{color:var(--text2);margin:0 0 28px}
+.card{border:1px solid var(--line);border-radius:8px;padding:24px;margin:0 0 20px;background:#fff}
+.card.step{display:none}
+.card.step.on{display:block}
+.num{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:var(--blue);color:#fff;font-weight:700;font-size:20px;margin-right:12px;vertical-align:middle}
+h2{font-size:22px;font-weight:500;margin:0 0 14px;display:flex;align-items:center}
+label{display:block;font-size:15px;color:var(--text2);margin:14px 0 4px}
+input{width:100%;font:inherit;font-size:20px;padding:12px 14px;border:1px solid var(--line);border-radius:6px;outline:none}
+input:focus{border-color:var(--blue);box-shadow:0 0 0 1px var(--blue)}
+.hint{font-size:15px;color:var(--text2);margin:6px 0 0}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:16px}
+.btn{font:inherit;font-size:18px;font-weight:500;padding:12px 22px;border-radius:4px;border:1px solid var(--line);background:#fff;color:var(--blue-text);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+.btn:hover{background:var(--hover)}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn.primary:hover{background:#1765cc}
+.btn:disabled{opacity:.45;cursor:default}
+.addr{font-family:Menlo,Consolas,monospace;font-size:19px;background:var(--blue-bg);color:var(--blue-text);padding:6px 12px;border-radius:4px;word-break:break-all}
+ol{margin:0;padding-left:28px}
+ol li{margin:0 0 12px}
+li .sub{color:var(--text2);font-size:15px}
+.warn{background:var(--warn-bg);color:var(--warn-text);border-radius:6px;padding:12px 16px;font-size:16px;margin-top:16px}
+.done{display:none;border-left:4px solid var(--ok);padding:4px 16px;margin:0 0 20px;font-size:17px}
+details{border-top:1px solid var(--line-soft);padding:14px 0;font-size:16px}
+summary{cursor:pointer;font-weight:500;font-size:18px}
+details ul{margin:10px 0 0;padding-left:22px}details li{margin:0 0 8px}
+table{border-collapse:collapse;width:100%;font-size:16px;margin-top:10px}
+td,th{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}th{background:var(--hover);font-weight:500}
+footer{color:var(--text2);font-size:14px;margin-top:40px}
+@media(max-width:600px){body{font-size:17px}h1{font-size:24px}.card{padding:18px}}
+</style>
+</head>
+<body>
+<header><div class="logo"></div><b>내 자료 옮기기</b><span>Admin Helper</span></header>
+<main>
+<h1>옛 계정의 드라이브와 메일을 새 계정으로 옮깁니다.</h1>
+<p class="lead">구글의 「콘텐츠 전송」 기능을 씁니다. 자료는 구글이 직접 복사하고, 이 페이지는 아무것도 저장하지 않습니다. 아래 두 칸을 채우면 3단계 버튼이 나옵니다.</p>
+
+<section class="card">
+<label for="old">1. 옛 계정 (자료가 들어 있는 계정)</label>
+<input id="old" type="email" inputmode="email" autocomplete="off" spellcheck="false" placeholder="예: hong123@옛도메인">
+<label for="new">2. 새 계정 (자료를 받을 계정)</label>
+<input id="new" type="email" inputmode="email" autocomplete="off" spellcheck="false" placeholder="예: hong123@새도메인">
+<p class="hint" id="newHint"></p>
+<p class="warn">새 계정이 아직 없거나 비밀번호를 모르면 먼저 담임·담당 선생님께 받으세요. 새 계정으로 한 번은 로그인해 두어야 합니다.</p>
+</section>
+
+<section class="card step" id="s1">
+<h2><span class="num">1</span>전송 페이지에서 새 계정 주소 넣기</h2>
+<ol>
+<li>아래 <b>전송 페이지 열기</b>를 누릅니다. <span class="sub">(옛 계정으로 열립니다. 다른 계정 화면이 나오면 오른쪽 위 프로필에서 옛 계정을 고르세요.)</span></li>
+<li>"대상 계정 입력" 칸에 새 계정 주소를 붙여 넣습니다. <span class="sub">(아래 <b>새 주소 복사</b>를 누르면 복사됩니다.)</span></li>
+<li><b>코드 받기</b>를 누릅니다.</li>
+</ol>
+<div class="row"><a class="btn primary" id="openTransfer" target="_blank" rel="noopener">전송 페이지 열기</a><button class="btn" id="copyNew">새 주소 복사</button><span class="addr" id="newAddr"></span></div>
+</section>
+
+<section class="card step" id="s2">
+<h2><span class="num">2</span>새 계정 메일에서 코드 받기</h2>
+<ol>
+<li>아래 <b>새 계정 메일함 열기</b>를 누릅니다. <span class="sub">(새 계정으로 로그인하라고 하면 로그인합니다.)</span></li>
+<li>구글이 보낸 "콘텐츠 전송" 메일을 열고 <b>확인 코드 받기</b>를 누릅니다.</li>
+<li>나온 코드를 복사합니다. <span class="sub">(코드는 24시간만 쓸 수 있고 한 번만 됩니다. 메일이 안 보이면 스팸함도 보세요.)</span></li>
+</ol>
+<div class="row"><a class="btn primary" id="openMail" target="_blank" rel="noopener">새 계정 메일함 열기</a></div>
+</section>
+
+<section class="card step" id="s3">
+<h2><span class="num">3</span>코드 넣고 전송 시작</h2>
+<ol>
+<li>1단계에서 열어 둔 전송 페이지 탭으로 돌아갑니다.</li>
+<li>코드를 붙여 넣고 <b>확인</b>을 누릅니다.</li>
+<li>옮길 것(드라이브, Gmail)을 켠 채로 <b>전송 시작</b>을 누릅니다.</li>
+</ol>
+<p class="hint">여기까지 하면 끝입니다. 전송은 보통 몇 시간, 길면 일주일 걸립니다. 끝나면 새 계정 메일로 알려 줍니다. 옛 계정의 자료는 그대로 남고, 새 계정에 복사본이 생깁니다.</p>
+<div class="row"><button class="btn" id="finish">다 했어요</button></div>
+</section>
+
+<p class="done" id="done">수고했습니다. 이제 이 창은 닫아도 됩니다. 새 계정 드라이브와 메일함에 자료가 들어옵니다.</p>
+
+<details><summary>안 될 때</summary>
+<ul>
+<li><b>"이 기능을 사용할 수 없습니다"</b>가 나오면 옛 계정의 교육청이 콘텐츠 전송을 아직 켜지 않은 것입니다. 담당 선생님께 알려 주세요. (관리자: 관리 콘솔 → 데이터 → 데이터 가져오기 및 내보내기 → Google Takeout → "콘텐츠 전송 허용", 그리고 드라이브 외부 공유 허용)</li>
+<li><b>코드 메일이 안 오면</b> 새 계정 주소가 틀렸거나, 새 계정에 Gmail이 꺼져 있는 경우입니다. 주소를 다시 보고, 그래도 안 오면 담당 선생님께 알려 주세요.</li>
+<li><b>파일 일부가 안 왔으면</b> 내가 소유자가 아닌 파일(남이 공유해 준 파일)이거나, 소유자가 복사를 막은 파일입니다. 그 파일은 소유자에게 새 계정으로 다시 공유해 달라고 하세요.</li>
+</ul></details>
+
+<details><summary>옮겨지는 것, 안 옮겨지는 것</summary>
+<table>
+<tr><th>옮겨짐</th><td>내 드라이브의 내 소유 파일과 폴더(댓글 포함), Gmail 메일, 포토</td></tr>
+<tr><th>안 옮겨짐</th><td>연락처, 캘린더, Tasks, Keep, 공유 드라이브, 수정 기록, 다른 사람이 공유해 준 파일, Classroom 수업</td></tr>
+<tr><th>캘린더·연락처</th><td>옛 계정에서 캘린더 설정 → 내보내기 / 주소록 → 내보내기 → 새 계정에서 가져오기</td></tr>
+<tr><th>Classroom (교사)</th><td>옛 계정에서 수업마다 새 계정을 공동 교사로 초대 → 새 계정으로 수락 → 새 계정에서 수업 「복사」. 학생 제출물은 학생 드라이브에 있어 학생 본인이 위 절차로 옮깁니다.</td></tr>
+</table></details>
+
+<footer>Admin Helper · 이 페이지는 입력한 주소를 어디에도 보내거나 저장하지 않습니다. 버튼은 구글 공식 페이지를 여는 것뿐입니다.</footer>
+</main>
+<script>
+(function(){
+  var q=new URLSearchParams(location.search), toDomain=(q.get('to')||'').replace(/^@/,'').toLowerCase();
+  var oldI=document.getElementById('old'), newI=document.getElementById('new'), hint=document.getElementById('newHint');
+  var steps=[1,2,3].map(function(n){return document.getElementById('s'+n)});
+  var ok=function(v){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)};
+  if(toDomain) hint.textContent='새 계정은 보통 옛 아이디 그대로 @'+toDomain+' 입니다. 자동으로 채워지니 다르면 고치세요.';
+  var touchedNew=false;
+  newI.addEventListener('input',function(){touchedNew=true;render()});
+  oldI.addEventListener('input',function(){
+    var v=oldI.value.trim();
+    if(toDomain&&!touchedNew&&v.indexOf('@')>0) newI.value=v.slice(0,v.indexOf('@'))+'@'+toDomain;
+    render();
+  });
+  function render(){
+    var o=oldI.value.trim().toLowerCase(), n=newI.value.trim().toLowerCase();
+    var show=ok(o)&&ok(n)&&o!==n;
+    steps.forEach(function(s){s.classList.toggle('on',show)});
+    document.getElementById('done').style.display='none';
+    if(!show) return;
+    document.getElementById('openTransfer').href='https://takeout.google.com/transfer?authuser='+encodeURIComponent(o);
+    document.getElementById('openMail').href='https://mail.google.com/mail/?authuser='+encodeURIComponent(n);
+    document.getElementById('newAddr').textContent=n;
+  }
+  document.getElementById('copyNew').addEventListener('click',function(){
+    var n=newI.value.trim(), b=this;
+    (navigator.clipboard?navigator.clipboard.writeText(n):Promise.reject()).then(function(){b.textContent='복사됨';setTimeout(function(){b.textContent='새 주소 복사'},1500)},function(){newI.select();document.execCommand&&document.execCommand('copy');b.textContent='복사됨';setTimeout(function(){b.textContent='새 주소 복사'},1500)});
+  });
+  document.getElementById('finish').addEventListener('click',function(){document.getElementById('done').style.display='block';window.scrollTo({top:document.getElementById('done').offsetTop-80,behavior:'smooth'})});
+})();
+</script>
+</body>
+</html>
