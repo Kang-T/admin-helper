@@ -338,6 +338,18 @@ code {
 .grid2 > :only-child {
   grid-column: 1 / -1;
 }
+.grid3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.grid3 > .card {
+  margin-bottom: 0;
+}
+/* 고정된 바로가기 핀 */
+.pinned {
+  color: var(--blue-text);
+}
 
 /* ---- 버튼 (콘솔식: 4px, 36px) ---- */
 .btn {
@@ -1032,6 +1044,9 @@ input[type="file"] {
   }
   .grid2 {
     grid-template-columns: minmax(0, 1fr);
+  }
+  .grid3 {
+    grid-template-columns: 1fr;
   }
 }
 

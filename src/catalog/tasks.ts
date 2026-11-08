@@ -13,7 +13,8 @@ export type TaskId =
   | "delete-users"
   | "approve-teacher"
   | "diagnose-classroom"
-  | "checklist";
+  | "checklist"
+  | "calendar";
 
 export interface Task {
   id: TaskId;
@@ -110,5 +111,11 @@ export const TASKS: Task[] = [
     title: "전환 점검표",
     description: "도메인 전환과 학년 초 준비가 됐는지 설정을 한 화면에서 점검합니다",
     keywords: ["점검", "전환", "체크리스트", "외부 공유", "Takeout", "콘텐츠 전송", "2단계", "준비"],
+  },
+  {
+    id: "calendar",
+    title: "연간 일정",
+    description: "달마다 관리자가 할 일을 한눈에 봅니다",
+    keywords: ["일정", "달력", "연간", "월별", "할 일", "학사"],
   },
 ];

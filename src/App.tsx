@@ -25,6 +25,9 @@ import DeleteUsers from "./features/DeleteUsers";
 import ApproveTeacher from "./features/ApproveTeacher";
 import DiagnoseClassroom from "./features/DiagnoseClassroom";
 import Checklist from "./features/Checklist";
+import Calendar from "./features/Calendar";
+import MonthCard from "./components/MonthCard";
+import { getPins, togglePin } from "./pins";
 
 const PANELS: Record<TaskId, ComponentType<PanelProps>> = {
   lookup: Lookup,
@@ -40,9 +43,10 @@ const PANELS: Record<TaskId, ComponentType<PanelProps>> = {
   "approve-teacher": ApproveTeacher,
   "diagnose-classroom": DiagnoseClassroom,
   checklist: Checklist,
+  calendar: Calendar,
 };
 
-type Section = "사용자" | "클래스룸" | "전환";
+type Section = "사용자" | "클래스룸" | "전환" | "일정";
 
 // 왼쪽 메뉴의 작업 항목 (DESIGN.md 1항). label은 메뉴·제목(h1)·빵부스러기에 같이 쓴다.
 const TASK_NAV: { id: TaskId; label: string; icon: string; section: Section }[] = [
@@ -59,6 +63,7 @@ const TASK_NAV: { id: TaskId; label: string; icon: string; section: Section }[] 
   { id: "approve-teacher", label: "교사 승인", icon: "verified", section: "클래스룸" },
   { id: "diagnose-classroom", label: "왜 수업을 못 만드나", icon: "troubleshoot", section: "클래스룸" },
   { id: "checklist", label: "전환 점검표", icon: "fact_check", section: "전환" },
+  { id: "calendar", label: "연간 일정", icon: "calendar_month", section: "일정" },
 ];
 
 // 왼쪽 메뉴 「설정 바로가기」 묶음과 아이콘
@@ -73,9 +78,6 @@ const SETTING_NAV: { group: SettingGroup; icon: string }[] = [
   { group: "기기", icon: "devices" },
 ];
 const groupIcon = (group: SettingGroup) => SETTING_NAV.find((n) => n.group === group)!.icon;
-
-// 홈 오른쪽 카드에 보이는 자주 쓰는 설정
-const FREQUENT = ["apps-core", "classroom-settings", "genai-app", "users"].map(settingById);
 
 type View =
   | { kind: "home" }
@@ -143,7 +145,7 @@ export default function App() {
           <p className="subtitle">Google Workspace 관리자 도우미</p>
           <p className="lead">
             관리자 계정으로 로그인하면 자주 하는 관리 작업을 버튼 하나로 처리합니다. 서버 없이 브라우저에서 구글에
-            직접 요청하며, 아무것도 저장하지 않습니다.
+            직접 요청하며, 계정 정보는 아무것도 저장하지 않습니다.
           </p>
           {CLIENT_ID ? (
             <button type="button" className="btn filled" onClick={login} disabled={busy}>
@@ -161,68 +163,104 @@ export default function App() {
   return <Main account={account} onLogout={logout} />;
 }
 
-// 설정 바로가기 목록: 제목·설명·[콘솔에서 열기]·펼치는 단계 안내
+// 설정 바로가기 목록: 제목·설명·[콘솔에서 열기]·펼치는 단계 안내·홈 고정 핀
 function SettingList({ items }: { items: SettingLink[] }) {
+  const [pins, setPins] = useState(getPins);
+  const [full, setFull] = useState(false); // 8개가 차서 고정하지 못함
+  function toggle(id: string) {
+    const next = togglePin(id);
+    setFull(!pins.includes(id) && !next.includes(id));
+    setPins(next);
+  }
   return (
-    <ul className="list settings">
-      {items.map((s) => (
-        <li key={s.id}>
-          <span className="icon" aria-hidden="true">
-            {groupIcon(s.group)}
-          </span>
-          <div className="t">
-            <b>{s.title}</b>
-            <span>{s.description}</span>
-            <details>
-              <summary>단계 안내</summary>
-              <ol>
-                {s.steps.map((step) => (
-                  <li key={step}>{step}</li>
-                ))}
-              </ol>
-            </details>
-          </div>
-          <a className="btn" href={consoleUrl(s.url)} target="_blank" rel="noopener noreferrer">
-            콘솔에서 열기
+    <>
+      {full && <p className="msg warn">바로가기는 8개까지 고정할 수 있습니다</p>}
+      <ul className="list settings">
+        {items.map((s) => (
+          <li key={s.id}>
             <span className="icon" aria-hidden="true">
-              open_in_new
+              {groupIcon(s.group)}
             </span>
-          </a>
-        </li>
-      ))}
-    </ul>
+            <div className="t">
+              <b>{s.title}</b>
+              <span>{s.description}</span>
+              <details>
+                <summary>단계 안내</summary>
+                <ol>
+                  {s.steps.map((step) => (
+                    <li key={step}>{step}</li>
+                  ))}
+                </ol>
+              </details>
+            </div>
+            <a className="btn" href={consoleUrl(s.url)} target="_blank" rel="noopener noreferrer">
+              콘솔에서 열기
+              <span className="icon" aria-hidden="true">
+                open_in_new
+              </span>
+            </a>
+            <button
+              type="button"
+              className="btn text"
+              aria-label={pins.includes(s.id) ? "고정 해제" : "홈에 고정"}
+              aria-pressed={pins.includes(s.id)}
+              onClick={() => toggle(s.id)}
+            >
+              <span className={`icon ${pins.includes(s.id) ? "pinned" : "muted"}`} aria-hidden="true">
+                push_pin
+              </span>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </>
   );
 }
 
-// 홈·진단 화면 오른쪽: 자주 쓰는 설정 4개 + [전체 보기]
+// 홈·진단 화면 오른쪽: 핀으로 고정한 설정 + [전체 보기]
 function FrequentSettings({ onAll }: { onAll: () => void }) {
+  const [pins, setPins] = useState(getPins);
   return (
     <div className="card">
       <div className="hd">
-        <h2>설정 바로가기</h2>
+        <h2>자주 쓰는 바로가기</h2>
         <button type="button" className="btn text" onClick={onAll}>
           전체 보기
         </button>
       </div>
       <div className="bd">
-        <ul className="list">
-          {FREQUENT.map((s) => (
-            <li key={s.id}>
-              <a className="row-link" href={consoleUrl(s.url)} target="_blank" rel="noopener noreferrer">
-                <span className="icon" aria-hidden="true">
-                  {groupIcon(s.group)}
-                </span>
-                <span className="t">
-                  <b>{s.title}</b>
-                  <span>{s.description}</span>
-                </span>
-                <span className="icon" aria-label="콘솔에서 열기">
-                  open_in_new
-                </span>
-              </a>
-            </li>
-          ))}
-        </ul>
+        {pins.length === 0 ? (
+          <p className="muted">고정한 바로가기가 없습니다. [전체 보기]에서 핀을 눌러 고정하세요.</p>
+        ) : (
+          <ul className="list">
+            {pins.map(settingById).map((s) => (
+              <li key={s.id}>
+                <a className="row-link" href={consoleUrl(s.url)} target="_blank" rel="noopener noreferrer">
+                  <span className="icon" aria-hidden="true">
+                    {groupIcon(s.group)}
+                  </span>
+                  <span className="t">
+                    <b>{s.title}</b>
+                    <span>{s.description}</span>
+                  </span>
+                  <span className="icon" aria-label="콘솔에서 열기">
+                    open_in_new
+                  </span>
+                </a>
+                <button
+                  type="button"
+                  className="btn text"
+                  aria-label="고정 해제"
+                  onClick={() => setPins(togglePin(s.id))}
+                >
+                  <span className="icon pinned" aria-hidden="true">
+                    push_pin
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </div>
   );
@@ -358,11 +396,12 @@ function Main({ account, onLogout }: { account: Account; onLogout: () => void })
       view.id !== "bulk-csv" &&
       view.id !== "promote" &&
       view.id !== "delete-users" &&
-      view.id !== "checklist";
+      view.id !== "checklist" &&
+      view.id !== "calendar";
     body = (
       <>
         {showUser && <UserCard user={user} domain={account.domain} onAction={openTask} />}
-        {view.id === "lookup" ? (
+        {view.id === "lookup" || view.id === "calendar" ? (
           panel
         ) : view.id === "diagnose-classroom" ? (
           <div className="grid2">
@@ -412,6 +451,7 @@ function Main({ account, onLogout }: { account: Account; onLogout: () => void })
         </div>
         {user && <UserCard user={user} domain={account.domain} onAction={openTask} />}
         <div className="grid2">
+          <MonthCard openTask={openTask} />
           <FrequentSettings onAll={showAll} />
         </div>
       </>
@@ -474,6 +514,8 @@ function Main({ account, onLogout }: { account: Account; onLogout: () => void })
         {taskNav("클래스룸")}
         <h4>전환</h4>
         {taskNav("전환")}
+        <h4>일정</h4>
+        {taskNav("일정")}
         <h4>
           설정 바로가기 <span>(콘솔로 이동)</span>
         </h4>

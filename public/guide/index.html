@@ -34,12 +34,12 @@ h1{font-weight:500}h2{margin-top:40px;font-weight:500}code{font-family:Menlo,mon
 <p><img src="https://aiep-admin-helper.vercel.app/guide/01-login.jpg" alt="로그인 전 화면: 가운데 카드와 Google 관리자 계정으로 로그인 버튼" width="640"></p>
 
 <h2>3. 화면 구성</h2>
-<p>어드민 콘솔과 같은 구성입니다. 위쪽 검색 바, 왼쪽 메뉴(사용자 · 클래스룸 · 설정 바로가기), 오른쪽 작업 화면. 흐름은 "사람 먼저"입니다. 홈에서 사용자를 찾아 고르면 상태 카드가 열리고, 카드 아래 버튼으로 그 사람에게 할 일을 바로 합니다. 위쪽 검색 바에 "비번", "정지"처럼 치면 작업과 바로가기가 걸러집니다.</p>
+<p>어드민 콘솔과 같은 구성입니다. 위쪽 검색 바, 왼쪽 메뉴(사용자 · 클래스룸 · 전환 · 일정 · 설정 바로가기), 오른쪽 작업 화면. 흐름은 "사람 먼저"입니다. 홈에서 사용자를 찾아 고르면 상태 카드가 열리고, 카드 아래 버튼으로 그 사람에게 할 일을 바로 합니다. 위쪽 검색 바에 "비번", "정지"처럼 치면 작업과 바로가기가 걸러집니다. 홈에는 학사 달력에 맞춘 「이달의 할 일」과, 핀으로 고정해 바꿀 수 있는 「자주 쓰는 바로가기」가 함께 보입니다.</p>
 <p><img src="https://aiep-admin-helper.vercel.app/guide/02-main.jpg" alt="홈 화면: 상단 바·왼쪽 메뉴, 사용자 찾기와 사용자 카드, 설정 바로가기" width="640"></p>
 <p>휴대폰에서도 같은 화면이 한 줄로 배치됩니다.</p>
 <p><img src="https://aiep-admin-helper.vercel.app/guide/07-mobile.jpg" alt="휴대폰 홈 화면: 왼쪽 메뉴는 상단 메뉴 버튼으로 여는 서랍으로 숨김" width="260"></p>
 
-<h2>4. 자주 하는 작업 13개</h2>
+<h2>4. 자주 하는 작업 14개</h2>
 <table>
 <tr><th>작업</th><th>무엇을 하나</th><th>콘솔에서 하면</th></tr>
 <tr><td>사용자 찾기·상태 보기</td><td>이름이나 이메일 앞부분으로 찾아 계정 상태·소속 OU·그룹·라이선스·클래스룸 교사 여부를 한 장에 보여줍니다. 카드 아래 버튼으로 바로 다음 작업으로 넘어갑니다.</td><td>사용자 → 검색 → 상세 → 탭 4~5개를 돌아다녀야 합니다</td></tr>
@@ -55,6 +55,7 @@ h1{font-weight:500}h2{margin-top:40px;font-weight:500}code{font-family:Menlo,mon
 <tr><td>클래스룸 교사 승인</td><td><code>classroom_teachers</code> 그룹 가입 여부를 확인하고 한 번에 넣습니다. 그룹이 없는 도메인이면 설정 화면으로 안내합니다.</td><td>그룹 → classroom_teachers → 구성원 추가 (이 그룹의 존재를 아는 사람이 드뭅니다)</td></tr>
 <tr><td>클래스룸 진단</td><td>"왜 수업을 못 만드나"를 5단계로 점검하고, 고칠 수 있는 것은 그 자리에서 버튼으로 고칩니다.</td><td>원인을 아는 사람이 직접 네 곳을 돌아봐야 합니다</td></tr>
 <tr><td>전환 점검표</td><td>도메인 전환(콘텐츠 전송)과 학년 초 준비에 필요한 설정 8가지(드라이브 외부 공유, 클래스룸 가입 범위·교사 권한, 2단계 인증 강제, Gmail, Takeout, 미접속·정지 계정, 다음 학년도 조직)를 한 화면에서 됨·주의·막힘·직접 확인으로 보여 주고, 결과를 글로 복사해 교육청에 보낼 수 있습니다. 읽기만 하고 설정은 바꾸지 않습니다.</td><td>드라이브·클래스룸·보안·Takeout 설정 화면과 사용자·조직 단위 목록을 하나씩 열어 봐야 합니다</td></tr>
+<tr><td>연간 일정</td><td>초등 학사 일정에 맞춰 달마다 관리자가 할 일(12월 계정 점검, 2월 학년 진급·신입생 계정, 3월 클래스룸 세팅 등)을 12개월 카드로 보여 주고, 항목마다 [열기]로 해당 작업 화면으로 바로 갑니다. 이번 달은 파란 테두리로 표시합니다.</td><td>콘솔에는 없습니다. 언제 무엇을 해야 하는지 담당자가 따로 챙겨야 합니다</td></tr>
 </table>
 <p><img src="https://aiep-admin-helper.vercel.app/guide/04-lookup-card.jpg" alt="사용자 카드: 상태 배지, 정보표, 아래 작업 버튼 줄" width="640"></p>
 <p>모든 쓰기 작업은 실행 전에 "누구에게 무엇을 하는지" 한 문장으로 확인을 받습니다. 정지·초기화처럼 되돌리기 어려운 일은 빨간 버튼입니다.</p>
@@ -91,7 +92,7 @@ h1{font-weight:500}h2{margin-top:40px;font-weight:500}code{font-family:Menlo,mon
 <tr><td>형태</td><td>정적 웹앱(Vite + React + TypeScript). 사이드 패널용 크롬 확장 껍데기 포함.</td></tr>
 <tr><td>사용 API</td><td>Admin SDK Directory(사용자·그룹·OU), Enterprise License Manager(라이선스), Google Classroom(교사 프로필·권한), Cloud Identity Policy(서비스 켜짐·꺼짐 읽기)</td></tr>
 <tr><td>로그인</td><td>Google Identity Services 토큰 클라이언트. 요청 범위: directory.user, group.member, group.readonly, orgunit, apps.licensing, classroom.rosters.readonly, cloud-identity.policies.readonly, reports.usage.readonly, datatransfer</td></tr>
-<tr><td>저장</td><td>없음. 환경변수는 공개값인 OAuth 클라이언트 ID 하나.</td></tr>
+<tr><td>저장</td><td>서버 저장 없음. 브라우저에는 바로가기 핀(설정 id 목록)만 localStorage에 둠. 환경변수는 공개값인 OAuth 클라이언트 ID 하나.</td></tr>
 <tr><td>검증</td><td>효림초등학교 워크스페이스(jjhyorim.es.kr) 최고관리자 계정으로 조회·진단 기능 실제 동작 확인(2026-10-13). 쓰기 기능은 코드 완성, 실계정 검증 예정.</td></tr>
 </table>
 
