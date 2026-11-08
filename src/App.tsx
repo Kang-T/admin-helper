@@ -121,9 +121,9 @@ export default function App() {
         <div className="login-card">
           <div className="brand">
             <Logo />
-            <b>Admin Helper</b>
+            <b>구아 · Admin Helper</b>
           </div>
-          <p className="subtitle">Google Workspace 관리자 도우미</p>
+          <p className="subtitle">Google Admin Helper, 구글 워크스페이스 관리자 도우미</p>
           <p className="lead">
             관리자 계정으로 로그인하면 자주 하는 관리 작업을 버튼 하나로 처리합니다. 서버 없이 브라우저에서 구글에
             직접 요청하며, 아무것도 저장하지 않습니다.
@@ -407,7 +407,7 @@ function Main({ account, onLogout }: { account: Account; onLogout: () => void })
         </button>
         <div className="brand">
           <Logo />
-          <b>Admin Helper</b>
+          <b>구아 · Admin Helper</b>
           <span>{account.domain}</span>
         </div>
         <div className="gsearch">
