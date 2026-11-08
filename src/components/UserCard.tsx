@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   errorMessage,
   getLicenseLabel,
@@ -56,9 +56,17 @@ export default function UserCard({
   onAction: (id: TaskId) => void;
 }) {
   const email = user.primaryEmail;
-  const groups = useLoad(() => listUserGroups(email), email);
-  const license = useLoad(() => getLicenseLabel(email), email);
-  const teacher = useLoad(() => getTeacherStatus(email, domain), email);
+  // 같은 사용자라도 작업 패널이 setUser(새 객체)를 부르면(교사 승인 등) 그룹·라이선스·교사 여부를 다시 읽는다.
+  const gen = useRef(0);
+  const prev = useRef(user);
+  if (prev.current !== user) {
+    prev.current = user;
+    gen.current += 1;
+  }
+  const key = `${email}#${gen.current}`;
+  const groups = useLoad(() => listUserGroups(email), key);
+  const license = useLoad(() => getLicenseLabel(email), key);
+  const teacher = useLoad(() => getTeacherStatus(email, domain), key);
 
   const admin = user.isAdmin ? "최고 관리자" : user.isDelegatedAdmin ? "위임 관리자" : "아님";
   const suspended = user.suspended

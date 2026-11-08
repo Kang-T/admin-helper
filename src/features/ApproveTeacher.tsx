@@ -41,6 +41,7 @@ export default function ApproveTeacher({ domain, user, setUser }: PanelProps) {
       await addTeacher(user.primaryEmail, domain);
       setStatus("member");
       setDone(true);
+      setUser({ ...user }); // 사용자 카드가 그룹·교사 여부를 다시 읽게 한다
     } catch (e) {
       // 409: 이미 그룹에 있음
       if (isStatus(e, 409)) setStatus("member");
