@@ -174,8 +174,8 @@ export const SETTINGS: SettingLink[] = [
     group: "계정",
     title: "Google Takeout·콘텐츠 전송",
     description: "사용자가 다른 계정으로 자료를 복사(콘텐츠 전송)할 수 있는지",
-    // 주소는 확인되지 않은 추정이다(실제 콘솔에서 열어 보고 고칠 것).
-    url: "https://admin.google.com/ac/apps/takeout",
+    // 구글 도움말 "Allow or block Google Takeout"의 "Go to Google Takeout" 링크(2026-11-08 확인). /ac/apps/takeout은 404.
+    url: "https://admin.google.com/ac/managedsettings/850805570439",
     keywords: ["Takeout", "테이크아웃", "콘텐츠 전송", "내보내기", "전환"],
     steps: [
       "데이터 → 데이터 가져오기 및 내보내기 → Google Takeout",
