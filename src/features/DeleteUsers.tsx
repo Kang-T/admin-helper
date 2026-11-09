@@ -17,7 +17,7 @@ import { clearToken, getToken, tokenSecondsLeft } from "../google/auth";
 import type { PanelProps } from "../catalog/tasks";
 import { runBulk, withRetry } from "../bulk";
 import { downloadCsv, stamp, toCsv } from "../csv";
-import { canDeleteNow, classifyDrive, reportDates, tierLabel, type Tier } from "../deletion";
+import { canDeleteNow, classifyDrive, pickTransfer, reportDates, tierLabel, type Tier } from "../deletion";
 import { pendingDelete } from "../selection";
 
 type Step = "pick" | "assess" | "transfer" | "confirm" | "run" | "done";
@@ -88,8 +88,10 @@ async function usageOf(email: string, dates: string[]): Promise<{ usedMb: number
   return { usedMb: null, totalMb: null };
 }
 
-// 한 명의 드라이브 이전. 이미 끝난 이전이 있으면 그것으로, 진행 중인 이전이 있으면 그 상태를 따라간다.
-async function transferOne(r: Row, newOwnerId: string, appId: string): Promise<Row> {
+// 한 명의 드라이브 이전. 이번 받을 계정으로 since 이후 요청된 기록만 본다.
+// 끝난 것이 있으면 그것으로, 진행 중이면 그 상태를 따라가고, 아니면 새로 만든다.
+// (옛날에 끝난 이전을 이번 완료로 오인하면 그 뒤 만든 파일을 옮기지 않고 지우게 된다.)
+async function transferOne(r: Row, newOwnerId: string, appId: string, since: number): Promise<Row> {
   const asked = { ...r, transferAsked: true, transferError: "" };
   const oldId = r.user?.id;
   if (!oldId) return { ...asked, transferError: "사용자 id를 받지 못했습니다" };
@@ -97,10 +99,8 @@ async function transferOne(r: Row, newOwnerId: string, appId: string): Promise<R
     const mine = (await withRetry(() => listTransfers(oldId))).filter((t) =>
       t.applicationDataTransfers?.some((a) => String(a.applicationId) === appId),
     );
-    const done = mine.find((t) => statusOf(t) === "completed");
-    if (done) return { ...asked, transferId: done.id, transferStatus: "completed" };
-    const running = mine.find((t) => !settled(statusOf(t)));
-    if (running) return { ...asked, transferId: running.id, transferStatus: statusOf(running) || "inprogress" };
+    const found = pickTransfer(mine, newOwnerId, since);
+    if (found) return { ...asked, transferId: found.id, transferStatus: found.status };
     // 만들기는 다시 시도하지 않는다(첫 요청이 실제로는 접수됐으면 이전이 둘 생긴다).
     const t = await createDriveTransfer(oldId, newOwnerId, appId);
     return { ...asked, transferId: t.id, transferStatus: statusOf(t) || "inprogress" };
@@ -294,10 +294,12 @@ export default function DeleteUsers({ domain, me, setLocked, openTask }: PanelPr
       const receiverId = receiver.id;
       if (!receiverId) throw new Error("받을 계정의 id를 받지 못했습니다");
       const list = rows.filter((r) => eligible(r) && (r.tier === "transfer" || r.tier === "unknown"));
+      // 구글 쪽 시계와의 차이를 감안해 1분 여유를 둔다.
+      const since = Date.now() - 60_000;
       setStep("transfer");
       setProgress(0);
       setProgressTotal(list.length);
-      const out = await runBulk(list, (r) => transferOne(r, receiverId, app.id), setProgress);
+      const out = await runBulk(list, (r) => transferOne(r, receiverId, app.id, since), setProgress);
       const byEmail = new Map(out.map((r) => [r.email, r]));
       setRows((prev) => prev.map((r) => byEmail.get(r.email) ?? r));
     } catch (e) {

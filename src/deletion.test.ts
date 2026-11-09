@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canDeleteNow, classifyDrive, reportDates, tierLabel, type Tier } from "./deletion";
+import { canDeleteNow, classifyDrive, pickTransfer, reportDates, tierLabel, type Tier } from "./deletion";
 
 describe("classifyDrive", () => {
   it("사용량을 모르면 확인 못 함", () => {
@@ -118,5 +118,34 @@ describe("canDeleteNow", () => {
   it("거의 없음은 바로 된다", () => {
     expect(canDeleteNow(row())).toEqual({ ok: true, reason: "" });
     expect(canDeleteNow(row({ transferDone: true }))).toEqual({ ok: true, reason: "" });
+  });
+});
+
+describe("pickTransfer", () => {
+  const since = Date.parse("2026-11-09T10:00:00Z");
+  const old = { id: "old", overallTransferStatusCode: "completed", newOwnerUserId: "B", requestTime: "2024-03-01T00:00:00Z" };
+  const other = { id: "oth", overallTransferStatusCode: "completed", newOwnerUserId: "C", requestTime: "2026-11-09T10:05:00Z" };
+  const mine = { id: "now", overallTransferStatusCode: "completed", newOwnerUserId: "B", requestTime: "2026-11-09T10:05:00Z" };
+  const running = { id: "run", overallTransferStatusCode: "inProgress", newOwnerUserId: "B", requestTime: "2026-11-09T10:01:00Z" };
+
+  it("옛 완료 기록은 이번 완료로 인정하지 않는다", () => {
+    expect(pickTransfer([old], "B", since)).toBeNull();
+  });
+
+  it("다른 받을 계정으로 간 기록은 무시한다", () => {
+    expect(pickTransfer([other], "B", since)).toBeNull();
+  });
+
+  it("이번 받을 계정으로 시작 뒤 끝난 것만 완료", () => {
+    expect(pickTransfer([old, other, mine], "B", since)).toEqual({ kind: "done", id: "now", status: "completed" });
+  });
+
+  it("진행 중인 것은 따라가고, 실패한 것은 새로 만든다", () => {
+    expect(pickTransfer([running], "B", since)).toEqual({ kind: "running", id: "run", status: "inprogress" });
+    expect(pickTransfer([{ ...running, overallTransferStatusCode: "failed" }], "B", since)).toBeNull();
+  });
+
+  it("요청 시각이 없는 기록은 믿지 않는다", () => {
+    expect(pickTransfer([{ id: "x", overallTransferStatusCode: "completed", newOwnerUserId: "B" }], "B", since)).toBeNull();
   });
 });

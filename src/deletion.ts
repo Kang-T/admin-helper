@@ -47,3 +47,30 @@ export function canDeleteNow(row: {
   if (row.tier === "transfer" && !row.transferDone) return { ok: false, reason: "소유권 이전 먼저" };
   return { ok: true, reason: "" };
 }
+
+// 이전 기록 고르기. 이번에 지정한 받을 계정으로, 이전을 시작한 시점(since, ms) 이후에 요청된 것만 본다.
+// 옛날에 다른 사정으로 끝난 이전을 이번 완료로 오인하면, 그 뒤 만든 파일을 옮기지 않고 계정을 지우게 된다.
+export interface TransferRecord {
+  id: string;
+  overallTransferStatusCode?: string;
+  newOwnerUserId?: string;
+  requestTime?: string;
+}
+
+export function pickTransfer(
+  list: TransferRecord[],
+  newOwnerId: string,
+  since: number,
+): { kind: "done" | "running"; id: string; status: string } | null {
+  const mine = list.filter((t) => {
+    if (String(t.newOwnerUserId ?? "") !== String(newOwnerId)) return false;
+    const at = t.requestTime ? Date.parse(t.requestTime) : NaN;
+    return Number.isFinite(at) && at >= since;
+  });
+  const status = (t: TransferRecord) => (t.overallTransferStatusCode ?? "").toLowerCase();
+  const done = mine.find((t) => status(t) === "completed");
+  if (done) return { kind: "done", id: done.id, status: "completed" };
+  const running = mine.find((t) => status(t) !== "completed" && status(t) !== "failed");
+  if (running) return { kind: "running", id: running.id, status: status(running) || "inprogress" };
+  return null;
+}
