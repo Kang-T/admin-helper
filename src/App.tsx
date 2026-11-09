@@ -151,6 +151,17 @@ export default function App() {
             관리자 계정으로 로그인하면 자주 하는 관리 작업을 버튼 하나로 처리합니다. 서버 없이 브라우저에서 구글에
             직접 요청하며, 계정 정보는 아무것도 저장하지 않습니다.
           </p>
+          <ul className="login-features" aria-label="할 수 있는 일">
+            <li>사용자 찾기·상태 보기, 비밀번호 초기화, 계정 정지·해제, 조직 단위 이동</li>
+            <li>신규 계정 만들기, CSV 일괄 생성·일괄 작업, 학년 진급</li>
+            <li>클래스룸 교사 승인, 수업을 못 만드는 원인 진단, 전환 점검표</li>
+            <li>정지 계정 삭제 (드라이브 소유권을 다른 계정으로 넘긴 뒤)</li>
+          </ul>
+          <p className="login-en">
+            Admin Helper is a browser-only console for Google Workspace for Education administrators: user lookup, password
+            reset, suspend, organizational-unit move, account creation, Classroom teacher approval, grade promotion, and
+            account deletion with Drive ownership transfer. No server; nothing is stored.
+          </p>
           {CLIENT_ID ? (
             <button type="button" className="btn filled" onClick={login} disabled={busy}>
               {busy ? "로그인하는 중…" : "Google 관리자 계정으로 로그인"}

@@ -992,8 +992,22 @@ input[type="file"] {
   color: var(--text2);
 }
 .login-card .lead {
-  margin: 16px 0 24px;
+  margin: 16px 0 14px;
   font-size: 14px;
+}
+.login-card .login-features {
+  margin: 0 0 16px;
+  padding-left: 18px;
+  font-size: 13px;
+  color: var(--text2);
+}
+.login-card .login-features li {
+  margin: 0 0 4px;
+}
+.login-card .login-en {
+  margin: 0 0 24px;
+  font-size: 12px;
+  color: var(--text2);
 }
 .login-card .login-apply {
   margin: 20px 0 0;
