@@ -100,6 +100,10 @@ function Logo() {
   return <div className="logo" aria-hidden="true" />;
 }
 
+// 테스트 사용자 등록 신청(구글 설문). 등록은 운영자가 수동으로 한다.
+const APPLY_FORM_URL =
+  "https://docs.google.com/forms/d/e/1FAIpQLSd5P_KktsYm1kiWS-CoADYYf2qISvdtmRtsO0otMPTxf9uJyA/viewform";
+
 export default function App() {
   const [account, setAccount] = useState<Account | null>(null);
   const [busy, setBusy] = useState(() => hasToken()); // 구글에서 막 돌아왔으면 바로 계정 확인
@@ -155,6 +159,12 @@ export default function App() {
             <p className="msg warn">설정이 필요합니다: SETUP_OAUTH.md를 보세요</p>
           )}
           {error && <p className="msg error">{error}</p>}
+          <p className="login-apply">
+            처음이세요? 지금은 신청하신 분부터 차례로 열어 드립니다.{" "}
+            <a href={APPLY_FORM_URL} target="_blank" rel="noreferrer">
+              사용 신청하기
+            </a>
+          </p>
           <p className="login-links">
             <a href="/guide/">가이드</a> · <a href="/privacy/">개인정보처리방침</a> ·{" "}
             <a href="https://github.com/Kang-T/admin-helper">소스 코드</a>

@@ -995,6 +995,14 @@ input[type="file"] {
   margin: 16px 0 24px;
   font-size: 14px;
 }
+.login-card .login-apply {
+  margin: 20px 0 0;
+  font-size: 13px;
+  color: var(--text2);
+}
+.login-card .login-apply a {
+  font-weight: 500;
+}
 .login-card .login-links {
   margin: 24px 0 0;
   font-size: 12px;
