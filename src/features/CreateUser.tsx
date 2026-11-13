@@ -3,7 +3,8 @@ import Confirm from "../components/Confirm";
 import { createUser, errorMessage, isStatus } from "../google/api";
 import type { PanelProps } from "../catalog/tasks";
 import { OuSelect, useOrgUnits } from "./MoveOu";
-import { SecretBox, generatePassword } from "./ResetPassword";
+import { PasswordOptions, SecretBox, generatePassword, passwordLabel } from "./ResetPassword";
+import { passwordProblem } from "../csv";
 
 export default function CreateUser({ domain }: PanelProps) {
   const { units, error: loadError } = useOrgUnits();
@@ -11,10 +12,12 @@ export default function CreateUser({ domain }: PanelProps) {
   const [givenName, setGivenName] = useState("");
   const [local, setLocal] = useState("");
   const [ou, setOu] = useState("/");
+  const [typed, setTyped] = useState("");
+  const [changeAtNext, setChangeAtNext] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [created, setCreated] = useState<{ email: string; password: string } | null>(null);
+  const [created, setCreated] = useState<{ email: string; password: string; changeAtNext: boolean } | null>(null);
 
   const email = `${local.trim()}@${domain}`;
 
@@ -25,6 +28,8 @@ export default function CreateUser({ domain }: PanelProps) {
     if (!/^[A-Za-z0-9._-]+$/.test(local.trim())) {
       return setError("이메일 앞부분은 영문, 숫자, 점(.), 밑줄(_), 하이픈(-)만 쓸 수 있습니다.");
     }
+    const problem = passwordProblem(typed.trim());
+    if (problem) return setError(`${problem}.`);
     setConfirming(true);
   }
 
@@ -33,19 +38,20 @@ export default function CreateUser({ domain }: PanelProps) {
     setBusy(true);
     setError("");
     setCreated(null);
-    const password = generatePassword();
+    const password = typed.trim() || generatePassword();
     try {
       await createUser({
         primaryEmail: email,
         name: { familyName: familyName.trim(), givenName: givenName.trim() },
         password,
-        changePasswordAtNextLogin: true,
+        changePasswordAtNextLogin: changeAtNext,
         orgUnitPath: ou,
       });
-      setCreated({ email, password });
+      setCreated({ email, password, changeAtNext });
       setFamilyName("");
       setGivenName("");
       setLocal("");
+      setTyped("");
     } catch (e) {
       setError(isStatus(e, 409) ? "이미 있는 이메일입니다." : errorMessage(e));
     } finally {
@@ -57,11 +63,13 @@ export default function CreateUser({ domain }: PanelProps) {
     <>
       {created && (
         <>
-          <p className="msg ok">계정을 만들었습니다. 첫 로그인 때 새 비밀번호를 정하게 됩니다.</p>
+          <p className="msg ok">
+            계정을 만들었습니다.{created.changeAtNext ? " 첫 로그인 때 새 비밀번호를 정하게 됩니다." : ""}
+          </p>
           <SecretBox
             rows={[
               ["이메일", created.email],
-              ["임시 비밀번호", created.password],
+              [passwordLabel(created.changeAtNext), created.password],
             ]}
             copyText={`${created.email}\n${created.password}`}
           />
@@ -97,7 +105,13 @@ export default function CreateUser({ domain }: PanelProps) {
           <OuSelect id="cu-ou" units={units} value={ou} onChange={setOu} />
           {loadError && <p className="msg error">{loadError}</p>}
         </div>
-        <p className="muted">임시 비밀번호는 자동으로 만들어집니다.</p>
+        <PasswordOptions
+          id="cu-password"
+          password={typed}
+          onPassword={setTyped}
+          changeAtNext={changeAtNext}
+          onChangeAtNext={setChangeAtNext}
+        />
         <div className="actions">
           <button type="submit" className="btn filled" disabled={busy}>
             {busy ? "만드는 중…" : "계정 만들기"}
@@ -107,7 +121,7 @@ export default function CreateUser({ domain }: PanelProps) {
       {error && <p className="msg error">{error}</p>}
       {confirming && (
         <Confirm
-          message={`${familyName.trim()}${givenName.trim()}(${email}) 계정을 '${ou}' 조직에 새로 만듭니다.`}
+          message={`${familyName.trim()}${givenName.trim()}(${email}) 계정을 '${ou}' 조직에 새로 만듭니다. 비밀번호는 ${typed.trim() ? "입력한 값" : "자동 생성 12자"}이고, ${changeAtNext ? "첫 로그인 때 바꾸게 합니다" : "첫 로그인 때 바꾸라고 하지 않습니다"}.`}
           confirmLabel="만들기"
           onConfirm={run}
           onCancel={() => setConfirming(false)}

@@ -9,6 +9,7 @@ import {
   validateActionRows,
   validateRows,
   type BulkAction,
+  passwordProblem,
 } from "./csv";
 
 // 시험용 값은 모두 예시다(실제 학교·사람이 아님).
@@ -410,5 +411,22 @@ describe("validateActionRows: 줄별 검사", () => {
     expect(actionRowsOf("move", [["이메일", "조직단위"], ["a+b", "/없음"]])[0].problem).toBe(
       "이메일 앞부분은 영문·숫자·. _ -만 됩니다, 조직 단위가 없습니다",
     );
+  });
+});
+
+describe("passwordProblem", () => {
+  it("비우면 통과(자동 생성)", () => {
+    expect(passwordProblem("")).toBe("");
+  });
+  it("8자 미만은 문제, 8자와 100자는 통과, 101자는 문제", () => {
+    expect(passwordProblem("abc1234")).toBe("비밀번호는 8자 이상이어야 합니다");
+    expect(passwordProblem("abc12345")).toBe("");
+    expect(passwordProblem("a".repeat(100))).toBe("");
+    expect(passwordProblem("a".repeat(101))).toBe("비밀번호는 100자 이하여야 합니다");
+  });
+  it("기호는 되고, 한글·빈칸은 안 된다", () => {
+    expect(passwordProblem("Hyorim!2026#")).toBe("");
+    expect(passwordProblem("효림초등학교2026")).toBe("비밀번호는 영문·숫자·기호만 됩니다(한글·빈칸 불가)");
+    expect(passwordProblem("hyorim 2026")).toBe("비밀번호는 영문·숫자·기호만 됩니다(한글·빈칸 불가)");
   });
 });

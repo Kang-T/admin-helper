@@ -3,6 +3,7 @@ import Confirm from "../components/Confirm";
 import UserPicker from "../components/UserPicker";
 import { errorMessage, updateUser } from "../google/api";
 import type { PanelProps } from "../catalog/tasks";
+import { passwordProblem } from "../csv";
 
 const CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
@@ -51,21 +52,90 @@ export function SecretBox({ rows, copyText }: { rows: [string, string][]; copyTe
   );
 }
 
+// 비밀번호 직접 입력(선택)과 「다음 로그인 때 바꾸게 하기」. 신규 계정·초기화가 같이 쓴다.
+// 기본은 자동 생성 + 바꾸기 꺼짐(학년 초 기기 세팅 때 정한 비밀번호가 그대로 유지되게).
+export function PasswordOptions({
+  id,
+  password,
+  onPassword,
+  changeAtNext,
+  onChangeAtNext,
+}: {
+  id: string;
+  password: string;
+  onPassword: (v: string) => void;
+  changeAtNext: boolean;
+  onChangeAtNext: (v: boolean) => void;
+}) {
+  return (
+    <>
+      <div className="field">
+        <label htmlFor={id}>비밀번호 (선택)</label>
+        <input
+          id={id}
+          value={password}
+          onChange={(e) => onPassword(e.target.value)}
+          placeholder="비우면 12자를 자동으로 만듭니다"
+          autoCapitalize="off"
+          autoComplete="off"
+          spellCheck={false}
+        />
+        <p className="muted">8자 이상, 영문·숫자·기호. 예: 학번+생일처럼 학교에서 정한 규칙</p>
+      </div>
+      <PasswordChangeCheck checked={changeAtNext} onChange={onChangeAtNext} />
+    </>
+  );
+}
+
+export function PasswordChangeCheck({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <div className="filters">
+      <div className="check">
+        <label>
+          <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
+          다음 로그인 때 비밀번호를 바꾸게 하기
+        </label>
+      </div>
+      {!checked && (
+        <p className="muted">
+          꺼 두면 정한 비밀번호가 계속 유지됩니다. 학년 초 기기 세팅이 끝나면 학생이 직접 바꾸도록 안내하세요.
+        </p>
+      )}
+    </div>
+  );
+}
+
+export function passwordLabel(changeAtNext: boolean): string {
+  return changeAtNext ? "임시 비밀번호" : "비밀번호";
+}
+
 export default function ResetPassword({ user, setUser }: PanelProps) {
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [typed, setTyped] = useState("");
+  const [changeAtNext, setChangeAtNext] = useState(false);
   const [password, setPassword] = useState<string | null>(null);
+  const [doneChange, setDoneChange] = useState(false);
+
+  function check() {
+    setError("");
+    const problem = passwordProblem(typed.trim());
+    if (problem) return setError(`${problem}.`);
+    setConfirming(true);
+  }
 
   async function run() {
     if (!user) return;
     setConfirming(false);
     setBusy(true);
     setError("");
-    const pw = generatePassword();
+    const pw = typed.trim() || generatePassword();
     try {
-      setUser(await updateUser(user.primaryEmail, { password: pw, changePasswordAtNextLogin: true }));
+      setUser(await updateUser(user.primaryEmail, { password: pw, changePasswordAtNextLogin: changeAtNext }));
       setPassword(pw);
+      setDoneChange(changeAtNext);
+      setTyped("");
     } catch (e) {
       setError(errorMessage(e));
     } finally {
@@ -73,24 +143,35 @@ export default function ResetPassword({ user, setUser }: PanelProps) {
     }
   }
 
+  const how = typed.trim() ? "입력한 비밀번호로" : "자동으로 만든 12자 비밀번호로";
+  const after = changeAtNext ? " 다음 로그인 때 새 비밀번호를 정하게 됩니다." : " 다음 로그인 때 바꾸라고 하지 않습니다.";
+
   return (
     <>
       <UserPicker user={user} onChange={setUser} />
       {user && !password && (
-        <>
-          <p>임시 비밀번호(12자)를 새로 만들고, 다음 로그인 때 비밀번호를 바꾸도록 설정합니다.</p>
-          <button type="button" className="btn filled" disabled={busy} onClick={() => setConfirming(true)}>
-            {busy ? "처리 중…" : "비밀번호 초기화"}
-          </button>
-        </>
+        <div className="form">
+          <PasswordOptions
+            id="rp-password"
+            password={typed}
+            onPassword={setTyped}
+            changeAtNext={changeAtNext}
+            onChangeAtNext={setChangeAtNext}
+          />
+          <div className="actions">
+            <button type="button" className="btn filled" disabled={busy} onClick={check}>
+              {busy ? "처리 중…" : "비밀번호 초기화"}
+            </button>
+          </div>
+        </div>
       )}
       {user && password && (
         <>
-          <p className="msg ok">비밀번호를 초기화했습니다.</p>
+          <p className="msg ok">비밀번호를 초기화했습니다.{doneChange ? " 다음 로그인 때 새 비밀번호를 정하게 됩니다." : ""}</p>
           <SecretBox
             rows={[
               ["이메일", user.primaryEmail],
-              ["임시 비밀번호", password],
+              [passwordLabel(doneChange), password],
             ]}
             copyText={password}
           />
@@ -99,7 +180,7 @@ export default function ResetPassword({ user, setUser }: PanelProps) {
       {error && <p className="msg error">{error}</p>}
       {confirming && user && (
         <Confirm
-          message={`${user.name.fullName}(${user.primaryEmail})의 비밀번호를 임시 비밀번호로 바꿉니다. 다음 로그인 때 새 비밀번호를 정하게 됩니다.`}
+          message={`${user.name.fullName}(${user.primaryEmail})의 비밀번호를 ${how} 바꿉니다.${after}`}
           confirmLabel="초기화"
           danger
           onConfirm={run}

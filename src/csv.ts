@@ -112,7 +112,8 @@ export function validateRows(
       if (!ous.has(orgUnitPath)) problems.push("조직 단위가 없습니다");
 
       const password = get("비밀번호");
-      if (password && password.length < 8) problems.push("비밀번호는 8자 이상이어야 합니다");
+      const pwProblem = passwordProblem(password);
+      if (pwProblem) problems.push(pwProblem);
 
       return { familyName, givenName, email, orgUnitPath, password, problem: problems.join(", ") };
     }),
@@ -216,4 +217,13 @@ export function downloadCsv(filename: string, text: string): void {
   a.download = filename;
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+// 직접 정한 비밀번호 검사. 비어 있으면 자동 생성이므로 통과. 구글 규칙: 8~100자, 영문·숫자·기호(ASCII)만.
+export function passwordProblem(pw: string): string {
+  if (!pw) return "";
+  if (pw.length < 8) return "비밀번호는 8자 이상이어야 합니다";
+  if (pw.length > 100) return "비밀번호는 100자 이하여야 합니다";
+  if (!/^[\x21-\x7e]+$/.test(pw)) return "비밀번호는 영문·숫자·기호만 됩니다(한글·빈칸 불가)";
+  return "";
 }

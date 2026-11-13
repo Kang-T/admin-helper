@@ -5,7 +5,7 @@ import { clearToken, getToken, tokenSecondsLeft } from "../google/auth";
 import type { PanelProps } from "../catalog/tasks";
 import { runBulk, withRetry } from "../bulk";
 import { MAX_ROWS, TEMPLATE, decodeCsv, downloadCsv, parseCsv, stamp, toCsv, validateRows, type BulkRow } from "../csv";
-import { generatePassword } from "./ResetPassword";
+import { PasswordChangeCheck, generatePassword, passwordLabel } from "./ResetPassword";
 
 type Outcome = "ok" | "exists" | "fail";
 interface Result {
@@ -20,7 +20,7 @@ const OUTCOME_CHIP: Record<Outcome, string> = { ok: "chip ok", exists: "chip war
 const MIN_LOGIN_SECONDS = 600; // 로그인이 이보다 적게 남았으면 시작하기 전에 다시 로그인하게 한다
 
 // 한 명 만들기. 409는 이미 있음. 429·500·503은 2초 뒤 한 번만 다시 시도한다(withRetry).
-async function createOne(row: BulkRow): Promise<Result> {
+async function createOne(row: BulkRow, changeAtNext: boolean): Promise<Result> {
   const password = row.password || generatePassword();
   let attempts = 0;
   try {
@@ -30,7 +30,7 @@ async function createOne(row: BulkRow): Promise<Result> {
         primaryEmail: row.email,
         name: { familyName: row.familyName, givenName: row.givenName },
         password,
-        changePasswordAtNextLogin: true,
+        changePasswordAtNextLogin: changeAtNext,
         orgUnitPath: row.orgUnitPath,
       });
     });
@@ -53,6 +53,7 @@ export default function BulkCreate({ domain, setLocked }: PanelProps) {
   const [confirming, setConfirming] = useState(false);
   const [doneCount, setDoneCount] = useState(0);
   const [results, setResults] = useState<Result[]>([]);
+  const [changeAtNext, setChangeAtNext] = useState(false);
   const [, recheck] = useState(0); // 「N명 만들기」를 누를 때 남은 로그인 시간을 다시 보게 한다
 
   const good = rows.filter((r) => !r.problem);
@@ -106,7 +107,7 @@ export default function BulkCreate({ domain, setLocked }: PanelProps) {
     setDoneCount(0);
     let out: Result[] = [];
     try {
-      out = await runBulk(good, createOne, setDoneCount);
+      out = await runBulk(good, (r) => createOne(r, changeAtNext), setDoneCount);
     } finally {
       setLocked?.(false);
     }
@@ -125,7 +126,7 @@ export default function BulkCreate({ domain, setLocked }: PanelProps) {
     ]);
     downloadCsv(
       `계정_생성결과_${stamp()}.csv`,
-      toCsv([["이메일", "성", "이름", "조직단위", "임시 비밀번호", "결과"], ...lines]),
+      toCsv([["이메일", "성", "이름", "조직단위", passwordLabel(changeAtNext), "결과"], ...lines]),
     );
   }
 
@@ -209,6 +210,7 @@ export default function BulkCreate({ domain, setLocked }: PanelProps) {
             </tbody>
           </table>
         </div>
+        <PasswordChangeCheck checked={changeAtNext} onChange={setChangeAtNext} />
         {loginLow && (
           <p className="msg warn">
             로그인이 {Math.ceil(secondsLeft / 60)}분 뒤 만료됩니다. 일괄 작업은 1시간 안에 끝나지 않을 수 있어, 다시
@@ -240,7 +242,7 @@ export default function BulkCreate({ domain, setLocked }: PanelProps) {
         </div>
         {confirming && (
           <Confirm
-            message={`${good.length}명의 계정을 만듭니다. ${bad ? `문제가 있는 ${bad}줄은 제외됩니다. ` : ""}모두 다음 로그인 때 비밀번호를 바꾸게 됩니다.`}
+            message={`${good.length}명의 계정을 만듭니다. ${bad ? `문제가 있는 ${bad}줄은 제외됩니다. ` : ""}${changeAtNext ? "모두 다음 로그인 때 비밀번호를 바꾸게 됩니다." : "다음 로그인 때 비밀번호를 바꾸라고 하지 않습니다."}`}
             confirmLabel="만들기"
             onConfirm={run}
             onCancel={() => setConfirming(false)}
@@ -286,7 +288,7 @@ export default function BulkCreate({ domain, setLocked }: PanelProps) {
               <th>성</th>
               <th>이름</th>
               <th>조직단위</th>
-              <th>임시 비밀번호</th>
+              <th>{passwordLabel(changeAtNext)}</th>
               <th>결과</th>
             </tr>
           </thead>
@@ -320,7 +322,7 @@ export default function BulkCreate({ domain, setLocked }: PanelProps) {
         </button>
       </div>
       <p className="msg warn">
-        이 파일에는 임시 비밀번호가 들어 있습니다. 나눠 준 뒤에는 지우세요. 이 화면을 떠나면 다시 볼 수 없습니다.
+        이 파일에는 비밀번호가 들어 있습니다. 나눠 준 뒤에는 지우세요. 이 화면을 떠나면 다시 볼 수 없습니다.
       </p>
       <div className="actions">
         <button type="button" className="btn text" onClick={restart}>
