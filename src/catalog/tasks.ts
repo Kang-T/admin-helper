@@ -43,7 +43,7 @@ export const TASKS: Task[] = [
   {
     id: "reset-password",
     title: "비밀번호 초기화",
-    description: "임시 비밀번호를 만들고 다음 로그인 때 바꾸게 합니다",
+    description: "비밀번호를 새로 정합니다(직접 입력하거나 자동 생성)",
     keywords: ["비밀번호", "비번", "초기화", "암호", "패스워드"],
   },
   {
@@ -61,13 +61,13 @@ export const TASKS: Task[] = [
   {
     id: "create-user",
     title: "신규 계정 만들기",
-    description: "새 계정을 만들고 임시 비밀번호를 발급합니다",
+    description: "새 계정을 만들고 비밀번호를 발급합니다(직접 입력하거나 자동 생성)",
     keywords: ["신규", "생성", "추가", "새", "발급", "교사", "전입"],
   },
   {
     id: "bulk-create",
     title: "일괄 생성(CSV)",
-    description: "CSV 파일로 여러 계정을 한 번에 만들고 임시 비밀번호를 발급합니다",
+    description: "CSV 파일로 여러 계정을 한 번에 만들고 비밀번호를 발급합니다",
     keywords: ["일괄", "CSV", "엑셀", "여러 명", "전입", "신입생", "대량"],
   },
   {
