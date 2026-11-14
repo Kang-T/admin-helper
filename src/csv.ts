@@ -133,12 +133,15 @@ export const ACTION_LABEL: Record<BulkAction, string> = {
 
 // 내려받는 양식: 머리글 + 예시 한 줄
 export function actionTemplate(a: BulkAction): string {
-  return a === "move" ? "이메일,조직단위\nhong.gildong,/2026학년도/4-1\n" : "이메일\nhong.gildong\n";
+  if (a === "move") return "이메일,조직단위\nhong.gildong,/2026학년도/4-1\n";
+  if (a === "reset") return "이메일,비밀번호\nhong.gildong,\n";
+  return "이메일\nhong.gildong\n";
 }
 
 export interface ActionRow {
   email: string;
   orgUnitPath: string; // move일 때만 쓴다. 나머지는 빈 값
+  password: string; // reset일 때만. 비어 있으면 실행할 때 자동 생성
   problem: string; // 비어 있으면 정상
 }
 
@@ -155,6 +158,7 @@ export function validateActionRows(
   const head = (table[0] ?? []).map((h) => h.trim());
   const emailCol = head.indexOf("이메일");
   const ouCol = head.indexOf("조직단위");
+  const pwCol = action === "reset" ? head.indexOf("비밀번호") : -1; // 비밀번호 열은 없어도 된다(모두 자동 생성)
   if (emailCol < 0 || (isMove && ouCol < 0)) {
     const need = isMove ? "이메일,조직단위" : "이메일";
     return { error: `첫 줄(머리글)이 양식과 다릅니다. '${need}'로 시작해야 합니다. 양식을 내려받아 쓰세요.` };
@@ -198,7 +202,11 @@ export function validateActionRows(
         }
       }
 
-      return { email, orgUnitPath, problem: problems.join(", ") };
+      const password = get(pwCol);
+      const pwProblem = passwordProblem(password);
+      if (pwProblem) problems.push(pwProblem);
+
+      return { email, orgUnitPath, password, problem: problems.join(", ") };
     }),
   };
 }

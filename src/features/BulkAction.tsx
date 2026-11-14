@@ -17,7 +17,7 @@ import {
   type ActionRow,
   type BulkAction as Action,
 } from "../csv";
-import { generatePassword } from "./ResetPassword";
+import { PasswordChangeCheck, generatePassword, passwordLabel } from "./ResetPassword";
 
 interface Result {
   email: string;
@@ -32,24 +32,25 @@ const DESCRIPTION: Record<Action, string> = {
   suspend: "정지되면 로그인할 수 없습니다.",
   unsuspend: "정지된 계정을 다시 로그인할 수 있게 합니다.",
   move: "조직단위는 /2026학년도/4-1처럼 전체 경로로 씁니다.",
-  reset: "임시 비밀번호(12자)를 새로 만들고 다음 로그인 때 바꾸게 합니다. 결과 파일에 비밀번호가 들어갑니다.",
+  reset: "비밀번호 열에 적은 값으로 바꿉니다. 비워 두면 12자를 자동으로 만듭니다. 결과 파일에 비밀번호가 들어갑니다.",
 };
 
-function confirmBase(action: Action, n: number): string {
+function confirmBase(action: Action, n: number, changeAtNext: boolean): string {
   if (action === "suspend") return `${n}명을 정지합니다. 정지되면 로그인할 수 없습니다.`;
   if (action === "unsuspend") return `${n}명의 정지를 해제합니다.`;
   if (action === "move") return `${n}명을 각자 지정한 조직 단위로 옮깁니다.`;
-  return `${n}명의 비밀번호를 임시 비밀번호로 바꿉니다. 다음 로그인 때 새 비밀번호를 정하게 됩니다.`;
+  const after = changeAtNext ? "다음 로그인 때 새 비밀번호를 정하게 됩니다." : "다음 로그인 때 바꾸라고 하지 않습니다.";
+  return `${n}명의 비밀번호를 바꿉니다(적은 값, 비운 줄은 자동 생성). ${after}`;
 }
 
 // 한 명 처리. 429·500·503은 2초 뒤 한 번만 다시 시도한다(withRetry).
-async function runOne(action: Action, row: ActionRow): Promise<Result> {
-  const password = action === "reset" ? generatePassword() : undefined;
+async function runOne(action: Action, row: ActionRow, changeAtNext: boolean): Promise<Result> {
+  const password = action === "reset" ? row.password || generatePassword() : undefined;
   const fields =
     action === "move"
       ? { orgUnitPath: row.orgUnitPath }
       : action === "reset"
-        ? { password, changePasswordAtNextLogin: true }
+        ? { password, changePasswordAtNextLogin: changeAtNext }
         : { suspended: action === "suspend" };
   try {
     await withRetry(() => updateUser(row.email, fields));
@@ -68,6 +69,7 @@ export default function BulkAction({ domain, me, setLocked }: PanelProps) {
   const [confirming, setConfirming] = useState(false);
   const [doneCount, setDoneCount] = useState(0);
   const [results, setResults] = useState<Result[]>([]);
+  const [changeAtNext, setChangeAtNext] = useState(false);
   const [, recheck] = useState(0); // 실행 버튼을 누를 때 남은 로그인 시간을 다시 보게 한다
 
   const label = ACTION_LABEL[action];
@@ -126,7 +128,7 @@ export default function BulkAction({ domain, me, setLocked }: PanelProps) {
     setDoneCount(0);
     let out: Result[] = [];
     try {
-      out = await runBulk(good, (row) => runOne(action, row), setDoneCount);
+      out = await runBulk(good, (row) => runOne(action, row, changeAtNext), setDoneCount);
     } finally {
       setLocked?.(false);
     }
@@ -137,7 +139,7 @@ export default function BulkAction({ domain, me, setLocked }: PanelProps) {
   function downloadResults() {
     const outcome = (r: Result) => (r.outcome === "ok" ? "성공" : "실패");
     const table = isReset
-      ? [["이메일", "임시 비밀번호", "결과", "사유"], ...results.map((r) => [r.email, r.password ?? "", outcome(r), r.message])]
+      ? [["이메일", passwordLabel(changeAtNext), "결과", "사유"], ...results.map((r) => [r.email, r.password ?? "", outcome(r), r.message])]
       : [["이메일", "결과", "사유"], ...results.map((r) => [r.email, outcome(r), r.message])];
     downloadCsv(`일괄_${label}결과_${stamp()}.csv`, toCsv(table));
   }
@@ -168,8 +170,9 @@ export default function BulkAction({ domain, me, setLocked }: PanelProps) {
         </select>
         <p>{DESCRIPTION[action]}</p>
         <p>
-          머리글이 <code>{isMove ? "이메일,조직단위" : "이메일"}</code>인 CSV 파일로 한 번에 {MAX_ROWS}명까지 처리합니다.
-          이메일은 앞부분만 써도 됩니다.
+          머리글이 <code>{isMove ? "이메일,조직단위" : isReset ? "이메일,비밀번호" : "이메일"}</code>인 CSV 파일로 한 번에{" "}
+          {MAX_ROWS}명까지 처리합니다. 이메일은 앞부분만 써도 됩니다.
+          {isReset && " 비밀번호는 8자 이상, 영문·숫자·기호로 쓰고, 비우면 자동으로 만듭니다."}
         </p>
         <p className="muted">엑셀에서는 '다른 이름으로 저장 → CSV UTF-8'을 권합니다. 일반 CSV(EUC-KR)도 읽습니다.</p>
         <div className="actions">
@@ -209,6 +212,7 @@ export default function BulkAction({ domain, me, setLocked }: PanelProps) {
                 <th>상태</th>
                 <th>이메일</th>
                 {isMove && <th>조직단위</th>}
+                {isReset && <th>비밀번호</th>}
                 <th>사유</th>
               </tr>
             </thead>
@@ -224,12 +228,14 @@ export default function BulkAction({ domain, me, setLocked }: PanelProps) {
                       <code>{r.orgUnitPath}</code>
                     </td>
                   )}
+                  {isReset && <td>{r.password ? "입력됨" : "자동 생성"}</td>}
                   <td className="wrap">{r.problem}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+        {isReset && <PasswordChangeCheck checked={changeAtNext} onChange={setChangeAtNext} />}
         {loginLow && (
           <p className="msg warn">
             로그인이 {Math.ceil(secondsLeft / 60)}분 뒤 만료됩니다. 일괄 작업은 1시간 안에 끝나지 않을 수 있어, 다시
@@ -261,7 +267,7 @@ export default function BulkAction({ domain, me, setLocked }: PanelProps) {
         </div>
         {confirming && (
           <Confirm
-            message={`${confirmBase(action, good.length)}${bad ? ` 문제가 있는 ${bad}줄은 제외됩니다.` : ""}`}
+            message={`${confirmBase(action, good.length, changeAtNext)}${bad ? ` 문제가 있는 ${bad}줄은 제외됩니다.` : ""}`}
             confirmLabel={label}
             danger={action === "suspend" || isReset}
             onConfirm={run}
@@ -288,7 +294,7 @@ export default function BulkAction({ domain, me, setLocked }: PanelProps) {
           <div style={{ width: `${good.length ? (doneCount / good.length) * 100 : 0}%` }} />
         </div>
         <p className="muted">
-          끝날 때까지 이 화면을 떠나지 마세요.{isReset && " 떠나면 임시 비밀번호를 볼 수 없습니다."}
+          끝날 때까지 이 화면을 떠나지 마세요.{isReset && " 떠나면 비밀번호를 볼 수 없습니다."}
         </p>
       </>
     );
@@ -307,7 +313,7 @@ export default function BulkAction({ domain, me, setLocked }: PanelProps) {
           <thead>
             <tr>
               <th>이메일</th>
-              {isReset && <th>임시 비밀번호</th>}
+              {isReset && <th>{passwordLabel(changeAtNext)}</th>}
               <th>결과</th>
               <th>사유</th>
             </tr>
@@ -336,7 +342,7 @@ export default function BulkAction({ domain, me, setLocked }: PanelProps) {
       </div>
       {isReset && (
         <p className="msg warn">
-          이 파일에는 임시 비밀번호가 들어 있습니다. 나눠 준 뒤에는 지우세요. 이 화면을 떠나면 다시 볼 수 없습니다.
+          이 파일에는 비밀번호가 들어 있습니다. 나눠 준 뒤에는 지우세요. 이 화면을 떠나면 다시 볼 수 없습니다.
         </p>
       )}
       <div className="actions">

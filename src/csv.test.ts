@@ -259,8 +259,28 @@ describe("validateRows: 줄별 검사", () => {
   it("목록에 없는 조직단위는 문제", () => {
     expect(rowsOf([["홍", "길동", "hong", "/2026학년도/9-9", ""]])[0]).toMatchObject({
       orgUnitPath: "/2026학년도/9-9",
+      password: "",
       problem: "조직 단위가 없습니다",
     });
+  });
+
+  it("초기화: 비밀번호 열을 읽고 규칙을 검사한다. 열이 없거나 비면 자동 생성(빈 값)", () => {
+    const rows = actionRowsOf("reset", [
+      ["이메일", "비밀번호"],
+      ["hong", " Hyorim2026! "],
+      ["kim", ""],
+      ["lee", "짧음1"],
+    ]);
+    expect(rows.map((x) => [x.password, x.problem])).toEqual([
+      ["Hyorim2026!", ""],
+      ["", ""],
+      ["짧음1", "비밀번호는 8자 이상이어야 합니다"],
+    ]);
+    expect(actionRowsOf("reset", [["이메일"], ["hong"]])[0]).toMatchObject({ password: "", problem: "" });
+  });
+
+  it("초기화가 아니면 비밀번호 열이 있어도 읽지 않는다", () => {
+    expect(actionRowsOf("suspend", [["이메일", "비밀번호"], ["hong", "x"]])[0]).toMatchObject({ password: "", problem: "" });
   });
 
   it("비밀번호가 8자 미만이면 문제, 8자면 통과, 비우면 통과", () => {
@@ -295,9 +315,10 @@ function actionRowsOf(action: BulkAction, table: string[][]) {
 }
 
 describe("actionTemplate", () => {
-  it("이동은 이메일·조직단위, 나머지는 이메일만", () => {
+  it("이동은 이메일·조직단위, 초기화는 이메일·비밀번호, 나머지는 이메일만", () => {
     expect(actionTemplate("move")).toBe("이메일,조직단위\nhong.gildong,/2026학년도/4-1\n");
-    for (const a of ["suspend", "unsuspend", "reset"] as const) expect(actionTemplate(a)).toBe("이메일\nhong.gildong\n");
+    expect(actionTemplate("reset")).toBe("이메일,비밀번호\nhong.gildong,\n");
+    for (const a of ["suspend", "unsuspend"] as const) expect(actionTemplate(a)).toBe("이메일\nhong.gildong\n");
   });
 
   it("양식을 그대로 올리면 정상으로 읽힌다", () => {
@@ -307,6 +328,7 @@ describe("actionTemplate", () => {
         {
           email: "hong.gildong@school.example",
           orgUnitPath: a === "move" ? "/2026학년도/4-1" : "",
+          password: "",
           problem: "",
         },
       ]);
@@ -329,7 +351,7 @@ describe("validateActionRows: 파일 전체 검사", () => {
 
   it("이동이 아니면 다른 열이 있어도 이메일만 본다", () => {
     expect(actionRowsOf("unsuspend", [["이름", " 이메일 ", "조직단위"], ["홍길동", "hong", "/없음"]])).toEqual([
-      { email: "hong@school.example", orgUnitPath: "", problem: "" },
+      { email: "hong@school.example", orgUnitPath: "", password: "", problem: "" },
     ]);
   });
 
@@ -355,8 +377,8 @@ describe("validateActionRows: 파일 전체 검사", () => {
 describe("validateActionRows: 줄별 검사", () => {
   it("이메일 앞부분만 쓰면 도메인을 붙이고 소문자로 바꾼다", () => {
     expect(actionRowsOf("suspend", [["이메일"], [" Hong.Gil_Dong-1 "], ["KIM@SCHOOL.EXAMPLE"]])).toEqual([
-      { email: "hong.gil_dong-1@school.example", orgUnitPath: "", problem: "" },
-      { email: "kim@school.example", orgUnitPath: "", problem: "" },
+      { email: "hong.gil_dong-1@school.example", orgUnitPath: "", password: "", problem: "" },
+      { email: "kim@school.example", orgUnitPath: "", password: "", problem: "" },
     ]);
   });
 
@@ -394,8 +416,8 @@ describe("validateActionRows: 줄별 검사", () => {
 
   it("이동: /로 시작하지 않으면 붙이고, 최상위(/)도 받는다", () => {
     expect(actionRowsOf("move", [["조직단위", "이메일"], ["2026학년도/4-1", "hong"], ["/", "kim"]])).toEqual([
-      { email: "hong@school.example", orgUnitPath: "/2026학년도/4-1", problem: "" },
-      { email: "kim@school.example", orgUnitPath: "/", problem: "" },
+      { email: "hong@school.example", orgUnitPath: "/2026학년도/4-1", password: "", problem: "" },
+      { email: "kim@school.example", orgUnitPath: "/", password: "", problem: "" },
     ]);
   });
 
@@ -403,8 +425,28 @@ describe("validateActionRows: 줄별 검사", () => {
     expect(actionRowsOf("move", [["이메일", "조직단위"], ["hong", "/2026학년도/9-9"]])[0]).toEqual({
       email: "hong@school.example",
       orgUnitPath: "/2026학년도/9-9",
+      password: "",
       problem: "조직 단위가 없습니다",
     });
+  });
+
+  it("초기화: 비밀번호 열을 읽고 규칙을 검사한다. 열이 없거나 비면 자동 생성(빈 값)", () => {
+    const rows = actionRowsOf("reset", [
+      ["이메일", "비밀번호"],
+      ["hong", " Hyorim2026! "],
+      ["kim", ""],
+      ["lee", "짧음1"],
+    ]);
+    expect(rows.map((x) => [x.password, x.problem])).toEqual([
+      ["Hyorim2026!", ""],
+      ["", ""],
+      ["짧음1", "비밀번호는 8자 이상이어야 합니다"],
+    ]);
+    expect(actionRowsOf("reset", [["이메일"], ["hong"]])[0]).toMatchObject({ password: "", problem: "" });
+  });
+
+  it("초기화가 아니면 비밀번호 열이 있어도 읽지 않는다", () => {
+    expect(actionRowsOf("suspend", [["이메일", "비밀번호"], ["hong", "x"]])[0]).toMatchObject({ password: "", problem: "" });
   });
 
   it("문제가 여럿이면 쉼표로 이어 붙인다", () => {
